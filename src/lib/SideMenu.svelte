@@ -164,8 +164,8 @@
      
 
 </nav>    
-
-    <a href="#" class="fixed bottom-4" on:click|preventDefault={toggleMenu}>
+    <!-- svelte-ignore a11y_invalid_attribute -->
+    <a href="" class="fixed bottom-4" on:click|preventDefault={toggleMenu}>
         <li>
             <p>登录</p>
         </li>
