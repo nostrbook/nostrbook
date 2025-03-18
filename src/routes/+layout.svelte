@@ -13,11 +13,13 @@
     }
 
    .side-menu {
+        position: relative;
         width: 20%;
         background-color: #f8f9fa; /* 浅灰色背景 */
         border-radius: 10px; /* 圆弧角 */
         margin: 10px;
-        overflow-y: auto;
+        
+        overflow: visible; /* 允许子元素超出 */
     }
 
    .content {
