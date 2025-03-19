@@ -1,8 +1,9 @@
 <script lang="ts">
-    import 'bootstrap/dist/css/bootstrap.min.css';
-    import SideMenu from '../lib/SideMenu.svelte';
+ 
     import '../app.css';
-    import '../main.css';
+ 
+
+    import SideMenu from '../lib/SideMenu.svelte';
 
 </script>
 
@@ -10,6 +11,7 @@
    .container {
         display: flex;
         height: 100vh;
+        
     }
 
    .side-menu {
@@ -29,7 +31,7 @@
     }
 </style>
 
-<div class="container">
+<div class="container mx-auto max-w-7xl flex h-screen">
     <div class="side-menu">
         <SideMenu />
     </div>
