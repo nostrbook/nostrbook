@@ -19,6 +19,7 @@
 
     const menuItems = [
         { text: '首页', link: '/' },
+        { text: '创建新书', link: '/createbook' },
         { text: '关于', link: '/about' },
         
     ];
@@ -259,7 +260,7 @@
         }    
 
     input:focus {
-	    border: 1px solid #d4237a; /* 显示蓝色边框 */
+	    border: 1px solid #d4237a; /*  */
     }
 </style>
 
