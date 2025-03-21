@@ -72,12 +72,12 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
     {#each books as book}
         <div class="mb-4">
-            <img src={book.content.coverurl} alt="封面图片预览" class="rounded-md w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;" />
-            <div class="p-2">
+           <img src={book.content.coverurl} alt="封面图片预览" class="w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+            <div class="p-2  bg-gray-100 border border-gray-300" style="border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem; border-top-left-radius: 0; border-top-right-radius: 0;">
                 <h3 class="text-lg font-bold mb-1">{book.content.title}</h3>
                 <div class="flex justify-between items-center text-sm">
-                    <p class="truncate text-gray-600">作者：{book.content.author}</p>
-                    <p class="text-gray-500">{formatTimestamp(book.created_at)}</p>
+                    <p class="truncate text-gray-600 flex-grow mr-2">作者:{book.content.author}</p>
+                    <p class="text-gray-500 text-xs whitespace-nowrap">{formatTimestamp(book.created_at)}</p>
                 </div>
             </div>
         </div>

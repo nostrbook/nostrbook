@@ -13,6 +13,7 @@ export async function createbook(relays,content,Keypriv){
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
 
+    console.log("connect ok,",content)
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 30023;
     ndkEvent.content = JSON.stringify(content);
@@ -20,8 +21,8 @@ export async function createbook(relays,content,Keypriv){
                 ['t','createbook'],
                 ['title',content['title']],
                 ];
-    //await ndkEvent.sign()
-    let ok = await ndkEvent.publish(relaySets,2000,0);
+    await ndkEvent.sign()        
+    let ok = await ndkEvent.publish(relaySets, 2000,0);
 
 }
 
@@ -59,7 +60,7 @@ export async function createchapter(relays,content,title,bookid,Keypriv){
                 ['title',title],
                 ['e',bookid],
                 ];
-    
+    await ndkEvent.sign() 
     let ok = await ndkEvent.publish(relaySets,2000,0);
 }
 
