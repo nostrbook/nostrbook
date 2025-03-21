@@ -28,7 +28,7 @@
         }
         // 渲染事件必须监听到books变化才会做网页渲染push 不会重新改变 books
         books = bookstemp;
-        console.log(books)
+        
     }
  
     function formatTimestamp(timestamp) {
@@ -69,7 +69,7 @@
 </h1>
 <hr class="my-4 border-gray-300">
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
     {#each books as book}
         <div class="mb-4">
             <img src={book.content.coverurl} alt="封面图片预览" class="rounded-md w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;" />
