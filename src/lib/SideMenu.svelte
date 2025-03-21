@@ -7,7 +7,11 @@
     import  Modal  from '$lib/Modal.svelte';
     import {WebStorage} from '$lib/WebStorage'
 
-
+    import { getContext } from 'svelte';
+     
+    // 页面左右结构共享变量
+    const keyprivStore = getContext('keypriv');
+    const keypubStore = getContext('keypub');
    
 
     let Keypriv;
@@ -18,11 +22,11 @@
     
 
     const menuItems = [
-        { text: '首页', link: '/' },
-        { text: '创建新书', link: '/createbook' },
-        { text: '关于', link: '/about' },
-        
+        { text: '首页', link: '/', requiresLogin: false },
+        { text: '创建新书', link: '/createbook', requiresLogin: true },
+        { text: '关于', link: '/about', requiresLogin: false }
     ];
+
 
 
     // 定义一个响应式变量来控制菜单的显示与隐藏
@@ -57,6 +61,9 @@
             Keypub = getPublicKey(Keypriv) // `pk` is a hex string
             nsecValue = nip19.nsecEncode(Keypriv);
             displayText = nsecValue.toString().slice(0, 8) + ":" +  nsecValue.toString().slice(-6);
+            
+            keyprivStore.set( Keypriv);
+            keypubStore.set(Keypub);
         }
 
 
@@ -68,28 +75,26 @@
     });
 
 
-    let showLoginModal = false;
-    let showRegisterModal = false;
+    let showModal = 0;
+    
+    const handleMenuItemClick = (event, item) => {
+        if (item.requiresLogin) {
+             
+            if (!Keypriv) {
+                event.preventDefault(); // 阻止默认的跳转行为
+                showModal = 4; //show提示登录信息 
+            }
+        }
+    };
+
 
     const openModal = (param) => {
-        if (param == 1){
-             showLoginModal = true;
-        }
-        if (param == 2){
-             showRegisterModal = true;
-             newkeyPriv = "";
-        }
-         
-         
+        showModal = param;
+          
     };
 
     const closeModal = (param) => {
-        if (param == 1){
-             showLoginModal = false;;
-        }
-        if (param == 2){
-             showRegisterModal = false;;
-        }
+       showModal = 0;
           
     };
 
@@ -114,8 +119,27 @@
     const LoginOk = () => {
         
         console.log(nsecValue)
+        Keypriv = nip19.decode(nsecValue)['data']
+        
+        Keypub = getPublicKey(Keypriv)
+        let storage = new WebStorage(localStorage);
+        storage.set("keyPriv",Keypriv);
         if (confirmAction() == 0)
-            showLoginModal = false;
+            showModal = 0;
+
+        displayText = nsecValue.toString().slice(0, 8) + ":" +  nsecValue.toString().slice(-6);
+    };
+
+    const LogoutOk = () => {
+        Keypriv = '';
+        Keypub = '';
+        nsecValue = '';
+     
+        displayText = '登录';
+        let storage = new WebStorage(localStorage);
+        storage.remove("keyPriv");
+        showModal = 0;
+ 
     };
 
     const RegisterOk = () => {
@@ -130,9 +154,12 @@
         Keypub = getPublicKey(Keypriv) // `pk` is a hex string
         nsecValue = nip19.nsecEncode(Keypriv);
 
+        keyprivStore.set(Keypriv);
+        keypubStore.set(Keypub);
+        displayText = nsecValue.toString().slice(0, 8) + ":" +  nsecValue.toString().slice(-6);
 
         if (confirmAction() == 0)
-            showRegisterModal = false;
+            showModal = 0;
     };
 
     const handleNewPrivKey = () =>{
@@ -267,7 +294,7 @@
 <nav>
     <ul >
         {#each menuItems as item}
-        <a data-sveltekit-preload-data="tap" href="{item.link}">
+        <a data-sveltekit-preload-data="tap" href="{item.link}" on:click={(event) => handleMenuItemClick(event, item)}>
             <li>
                 <p>{item.text}</p>
             </li>
@@ -290,11 +317,13 @@
             <a href=""  on:click={() => openModal(1)} ><li >Login</li> </a>
              <!-- svelte-ignore a11y_invalid_attribute -->
             <a href=""  on:click={() => openModal(2)} ><li>Register</li></a>
+             <!-- svelte-ignore a11y_invalid_attribute -->
+            <a href=""  on:click={() => openModal(3)} ><li>Logout</li></a>
         </ul>
     </div>
      
 
-<Modal isOpen={showLoginModal} onClose={() => closeModal(1)}  onOK={LoginOk}>
+<Modal isOpen={showModal==1} onClose={() => closeModal(1)}  onOK={LoginOk}>
     <svelte:fragment slot="title">
         <h2 class="text-2xl font-bold">Login</h2>
     </svelte:fragment>
@@ -314,7 +343,7 @@
 </Modal>
 
 
-<Modal isOpen={showRegisterModal} onClose={() => closeModal(2)} onOK={RegisterOk}>
+<Modal isOpen={showModal == 2 } onClose={() => closeModal(2)} onOK={RegisterOk}>
     <svelte:fragment slot="title">
         <h2 class="text-2xl font-bold">Register</h2>
     </svelte:fragment>
@@ -338,6 +367,40 @@
             </button>
             </div>
              
+        </div>
+    </div>
+ 
+</Modal>
+
+
+<Modal isOpen={showModal==3} onClose={() => closeModal(3)}  onOK={LogoutOk}>
+    <svelte:fragment slot="title">
+        <h2 class="text-2xl font-bold">Logout</h2>
+    </svelte:fragment>
+    <div class="flex justify-center space-y-10">
+        <div class="self-start w-full md:w-3/4 lg:w-1/2">
+            <p>注销前请保存你的nsec</p>
+            <p>丢失将无法找回!</p>
+            <input 
+                type="text" 
+                placeholder="" 
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                style="user-select: auto;"
+             bind:value={nsecValue} />
+             
+        </div>
+    </div>
+ 
+</Modal>
+
+
+<Modal isOpen={showModal==4} onClose={() => closeModal(4)}  onOK={() => closeModal(4)}>
+    <svelte:fragment slot="title">
+        <h2 class="text-2xl font-bold">提示！</h2>
+    </svelte:fragment>
+    <div class="flex justify-center space-y-10">
+        <div class="self-start w-full md:w-3/4 lg:w-1/2">
+            <p class="mt-10">请先登录</p>
         </div>
     </div>
  

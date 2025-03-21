@@ -2,8 +2,19 @@
  
     import '../app.css';
  
-
     import SideMenu from '../lib/SideMenu.svelte';
+    import { setContext } from'svelte';
+    import { writable } from'svelte/store';
+
+    //页面的左右结构来共享变量 
+    // 创建可写存储来存储 keypriv 和 keypub
+    const keyprivStore = writable('');
+    const keypubStore = writable('');
+
+    // 设置上下文
+    setContext('keypriv', keyprivStore);
+    setContext('keypub', keypubStore);
+
 
 </script>
 
@@ -27,7 +38,7 @@
    .content {
         width: 80%;
         padding: 20px;
-        overflow-y: auto;
+         
     }
 </style>
 

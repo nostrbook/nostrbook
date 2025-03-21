@@ -1,16 +1,76 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
+    import type { EventTemplate } from 'nostr-tools/pure';
+    import  { finalizeEvent } from 'nostr-tools/pure';
+    import {
+     type FileUploadResponse,
+     type OptionalFormDataFields,
+    } from 'nostr-tools/nip96';
+ 
+    import { uploadFile } from '$lib/nip96';
+    import { defaultUploaderURLs,defaultRelays} from '$lib/config';
+    import {createbook} from '$lib/bookevent';
 
+    import {
+        getEventHash,
+        type Event,
+        nip19,
+        getPublicKey,
+        generateSecretKey,
+        nip04
+    } from 'nostr-tools';
+
+    import { getContext } from 'svelte';
+    import { writable, get } from 'svelte/store';
+     
+
+    const keyprivStore = getContext('keypriv');
+    const keypubStore = getContext('keypub');
+    let Keypriv;
+    let Keypub;
+
+   
     let bookTitle = '';
     let author = '';
     let coverImage = null;
+
+    const resizeImage = (imageSrc, maxWidth, maxHeight) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = imageSrc;
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = height * (maxWidth / width);
+                    width = maxWidth;
+                }
+
+                if (height > maxHeight) {
+                    width = width * (maxHeight / height);
+                    height = maxHeight;
+                }
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                const resizedDataURL = canvas.toDataURL('image/jpeg');
+                resolve(resizedDataURL);
+            };
+        });
+    };
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                coverImage = e.target.result;
+            reader.onload = async (e) => {
+                 const resizedImage = await resizeImage(e.target.result, 262*2, 369*2);
+                 coverImage = resizedImage;
+
             };
             reader.readAsDataURL(file);
         }
@@ -34,9 +94,9 @@
                     if (blob) {
                         // 使用 FileReader 读取图片数据
                         const reader = new FileReader();
-                        reader.onload = (e) => {
-                            // 将图片数据保存到变量中
-                            coverImage = e.target.result;
+                        reader.onload = async(e) => {
+                             const resizedImage = await resizeImage(e.target.result, 262*2, 369*2);
+                             coverImage = resizedImage;
                              
 
                         };
@@ -47,19 +107,63 @@
             }
         }
     };
-    const handleSubmit = () => {
+
+        // 将 DataURL 转换为 File 对象的函数
+    function dataURLToFile(dataURL, fileName) {
+        // 提取 DataURL 中的 MIME 类型
+        const arr = dataURL.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        // 对 Base64 编码的数据进行解码
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        // 创建 Blob 对象
+        const blob = new Blob([u8arr], { type: mime });
+        // 从 Blob 对象创建 File 对象
+        return new File([blob], fileName, { type: mime });
+    }
+
+    function get_url(tags,tagName){
+        const urlEntry = tags.find(item => item[0] === tagName);
+        return urlEntry[1];
+    }
+    const handleSubmit = async () => {
         // 这里可以添加提交表单的逻辑，例如发送数据到服务器
-        console.log('书名:', bookTitle);
-        console.log('作者:', author);
+        // upload coverImage to media server 
+        let url = defaultUploaderURLs[0];
+        let file = dataURLToFile(coverImage,"coverImage.png");
+        let response = await uploadFile(url,file,Keypriv); 
+        let coverurl = get_url(response.nip94_event.tags,"url");
+        
+       
+        const bookInfo = {
+            coverurl: coverurl,
+            title: bookTitle,
+            author: author
+        };
+
+        createbook(defaultRelays,bookInfo,Keypriv);         
         
     };
 
+
+
+
     onMount(() => {
         document.addEventListener('paste', handlePaste);
+        Keypriv = get(keyprivStore);
+        Keypub = get(keypubStore);
+         
         return () => {
             document.removeEventListener('paste', handlePaste);
         };
     });
+
+
+
 </script>
 
 <style>
@@ -72,10 +176,10 @@
     <p class="text-2xl font-bold text-center text-gray-800 mb-4">创建一本新书</p>
     {#if coverImage}
         <div class="mb-4">
-            <img src={coverImage} alt="封面图片预览" class=" rounded-md" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;" />
+            <img src={coverImage} alt="封面图片预览" class="rounded-md" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;" />
         </div>
     {:else}
-        <div class="mb-4 border border-gray-300 rounded-md  flex justify-center items-center text-gray-400" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;">
+        <div class="mb-4 border border-gray-300 rounded-md flex justify-center items-center text-gray-400" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;">
             封面图片
         </div>
     {/if}
