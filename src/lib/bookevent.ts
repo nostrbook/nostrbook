@@ -22,8 +22,9 @@ export async function createbook(relays,content,Keypriv){
                 ['title',content['title']],
                 ];
     await ndkEvent.sign()        
-    let ok = await ndkEvent.publish(relaySets, 2000,0);
-
+    let ret = await ndkEvent.publish(relaySets);
+    console.log(ret);
+    return ret;
 }
 
 

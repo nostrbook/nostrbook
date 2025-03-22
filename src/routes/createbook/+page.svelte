@@ -29,7 +29,10 @@
     let Keypriv;
     let Keypub;
 
-   
+    let isPublishing = false;
+    let publishMessage = '正在发布...';
+
+
     let bookTitle = '';
     let author = '';
     let coverImage = null;
@@ -131,13 +134,15 @@
         return urlEntry[1];
     }
     const handleSubmit = async () => {
+        isPublishing = true;
+
         // 这里可以添加提交表单的逻辑，例如发送数据到服务器
         // upload coverImage to media server 
         let url = defaultUploaderURLs[0];
         let file = dataURLToFile(coverImage,"coverImage.png");
         let response = await uploadFile(url,file,Keypriv); 
         let coverurl = get_url(response.nip94_event.tags,"url");
-        
+        publishMessage = "图片上传成功，正在发布信息";
        
         const bookInfo = {
             coverurl: coverurl,
@@ -145,8 +150,14 @@
             author: author
         };
 
-        createbook(defaultRelays,bookInfo,Keypriv);         
         
+        setTimeout( async () => {
+            let ret = await createbook(defaultRelays,bookInfo,Keypriv);         
+            publishMessage = "发布成功到 " + ret.size + "个服务器。" ;
+            setTimeout(() => {
+                isPublishing = false;
+            }, 3000);
+        },100);
     };
 
 
@@ -169,6 +180,40 @@
 <style>
     input:focus {
 	    border: 1px solid #d4237a; /*  */
+    }
+
+    .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #000;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .info-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .info-content {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 0.375rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 </style>
 
@@ -231,3 +276,16 @@
         </button>
     </form>
 </div>
+
+{#if isPublishing}
+    <div class="info-modal">
+        <div class="info-content">
+            <div class="flex items-center">
+                {#if publishMessage === '正在发布...'}
+                    <div class="loading-spinner mr-3"></div>
+                {/if}
+                <span>{publishMessage}</span>
+            </div>
+        </div>
+    </div>
+{/if} 
