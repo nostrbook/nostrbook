@@ -17,6 +17,7 @@
     let Keypriv;
     let Keypub;
     let nsecValue = '';
+    let npubValue = '';
     let newkeyPriv;
     let displayText = '登录';
     
@@ -60,7 +61,8 @@
             Keypriv = new Uint8Array(numArray)
             Keypub = getPublicKey(Keypriv) // `pk` is a hex string
             nsecValue = nip19.nsecEncode(Keypriv);
-            displayText = nsecValue.toString().slice(0, 8) + ":" +  nsecValue.toString().slice(-6);
+            npubValue = nip19.npubEncode(Keypub);
+            displayText = npubValue.toString().slice(0, 8) + ":" +  npubValue.toString().slice(-6);
             
             keyprivStore.set( Keypriv);
             keypubStore.set(Keypub);
@@ -118,16 +120,17 @@
     }
     const LoginOk = () => {
         
-        console.log(nsecValue)
+        
         Keypriv = nip19.decode(nsecValue)['data']
         
         Keypub = getPublicKey(Keypriv)
+        npubValue = nip19.npubEncode(Keypub);
         let storage = new WebStorage(localStorage);
         storage.set("keyPriv",Keypriv);
         if (confirmAction() == 0)
             showModal = 0;
 
-        displayText = nsecValue.toString().slice(0, 8) + ":" +  nsecValue.toString().slice(-6);
+        displayText = npubValue.toString().slice(0, 8) + ":" +  npubValue.toString().slice(-6);
     };
 
     const LogoutOk = () => {
@@ -153,10 +156,11 @@
         Keypriv =  newkeyPriv; 
         Keypub = getPublicKey(Keypriv) // `pk` is a hex string
         nsecValue = nip19.nsecEncode(Keypriv);
+        npubValue = nip19.npubEncode(Keypub);
 
         keyprivStore.set(Keypriv);
         keypubStore.set(Keypub);
-        displayText = nsecValue.toString().slice(0, 8) + ":" +  nsecValue.toString().slice(-6);
+        displayText = npubValue.toString().slice(0, 8) + ":" +  npubValue.toString().slice(-6);
 
         if (confirmAction() == 0)
             showModal = 0;
@@ -167,7 +171,7 @@
         newkeyPriv = generateSecretKey();
         let bech32PrivateKey = nip19.nsecEncode(newkeyPriv)
         nsecValue = bech32PrivateKey;
-         
+        
        
 
     }
