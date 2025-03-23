@@ -13,13 +13,45 @@
             await import('simplemde/dist/simplemde.min.css');
             const { marked } = await import('marked');
 
+
+           const insertImageButton = {
+                name: 'insertImage',
+                action: function (editor) {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.addEventListener('change', async (event) => {
+                        const file = event.target.files[0];
+                        if (file) {
+                            // 这里可以添加上传图片到服务器的逻辑，获取图片 URL
+                            // 为了简单示例，我们假设已经有了图片 URL
+                            const imageUrl = URL.createObjectURL(file);
+                            const cm = editor.codemirror;
+                            const cursor = cm.getCursor();
+                            const imageMarkdown = `![图片](${imageUrl})`;
+                            cm.replaceRange(imageMarkdown, cursor);
+                        }
+                    });
+                    input.click();
+                },
+                className: 'fa fa-camera',
+                title: '上传图片'
+            };
+
+
             simplemde = new SimpleMDE({
                 element: textareaRef, // 使用绑定的 textarea 引用
                 autofocus: true,
                 spellChecker: false,
                 previewRender: function (plainText) {
                     return marked(plainText); // 使用导入的 marked 实例
-                }
+                },
+                toolbar:[
+                    'bold', 'italic', 'heading-1', 'heading-2', 'heading-3', 
+                    'quote', 'unordered-list', 'ordered-list', 'link', 'image', 'code', 'table', 'horizontal-rule',
+                    'preview', 'side-by-side', 'fullscreen', 'guide',
+                    insertImageButton, '|',
+                ]
             });
 
             // 设置初始内容
