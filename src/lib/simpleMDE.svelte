@@ -32,11 +32,6 @@
                 content = simplemde.value();
             });
 
-            // 监听 content 变量变化并更新 SimpleMDE 内容
-            $: if (simplemde) {
-                simplemde.value(content);
-            }
-
             const style = document.createElement('style');
             style.textContent = `.CodeMirror { height: 90%; }`;
             document.head.appendChild(style);
@@ -45,6 +40,11 @@
             console.error('加载 SimpleMDE 时出错:', error);
         }
     });
+
+    // 将响应式声明移到顶级作用域
+    $: if (simplemde) {
+        simplemde.value(content);
+    }
 </script>
 
 <textarea bind:value={content} bind:this={textareaRef}></textarea>
