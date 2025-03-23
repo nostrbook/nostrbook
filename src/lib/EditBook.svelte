@@ -11,6 +11,8 @@
    let isLoading = false;
    export let isWritebookOpen;
    export let bookId;
+   let content;
+   let chapterTitle;
 
     const keyprivStore = getContext('keypriv');
     const keypubStore = getContext('keypub');
@@ -64,6 +66,11 @@
         Keypriv = get(keyprivStore);
         Keypub = get(keypubStore);
     });
+
+
+    function CreateChapter(){
+        console.log(chapterTitle,content);
+    }
 
     $: if (isWritebookOpen) {
         editbook(bookId);
@@ -246,13 +253,13 @@
             <div class="right-editor">
                 <div class="flex items-center space-x-2">
                     <label for="title-input" class="font-bold">标题:</label>
-                    <input type="text" id="title-input" placeholder="请输入标题" class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <input type="text" bind:value={chapterTitle} id="title-input" placeholder="请输入标题" class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
                <div class="mt-4" style="height:90%;">
-                  <SimpleMDE />
+                  <SimpleMDE bind:content={content}/>
                </div>
                 <div class="flex justify-end mt-1">
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">提交</button>
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" on:click={CreateChapter}>提交</button>
                 </div>
             </div>
         </div>
