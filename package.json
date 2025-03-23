@@ -30,7 +30,10 @@
 		"@tailwindcss/postcss": "^4.0.14",
 		"@tailwindcss/vite": "^4.0.14",
 		"bootstrap": "^5.3.3",
+		"codemirror": "^5.65.19",
 		"cors": "^2.8.5",
-		"nostr-tools": "^2.11.0"
+		"marked": "^15.0.7",
+		"nostr-tools": "^2.11.0",
+		"simplemde": "^1.11.2"
 	}
 }

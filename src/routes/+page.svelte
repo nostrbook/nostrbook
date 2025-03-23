@@ -14,7 +14,7 @@
 
     let bookstemp = [];
     let books = [];
-
+    let isLoading = true;
     function handlerBook(e){
         
         let book = {};
@@ -28,6 +28,7 @@
         }
         // 渲染事件必须监听到books变化才会做网页渲染push 不会重新改变 books
         books = bookstemp;
+        isLoading = false;
         
     }
  
@@ -62,6 +63,41 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
+
+    .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #000;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .info-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .info-content {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 0.375rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
 </style>
 
 <h1 class="text-3xl font-bold mb-4 text-gradient">
@@ -83,3 +119,16 @@
         </div>
     {/each}
 </div>
+
+{#if isLoading}
+    <div class="info-modal">
+        <div class="info-content">
+            <div class="flex items-center">
+                 
+                <div class="loading-spinner mr-3"></div>
+                 
+                <span>正在加载</span>
+            </div>
+        </div>
+    </div>
+{/if} 

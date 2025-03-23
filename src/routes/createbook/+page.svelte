@@ -142,7 +142,7 @@
         let file = dataURLToFile(coverImage,"coverImage.png");
         let response = await uploadFile(url,file,Keypriv); 
         let coverurl = get_url(response.nip94_event.tags,"url");
-        publishMessage = "图片上传成功，正在发布信息";
+        publishMessage = "封面上传成功，正在发布新书信息";
        
         const bookInfo = {
             coverurl: coverurl,
@@ -153,15 +153,27 @@
         
         setTimeout( async () => {
             let ret = await createbook(defaultRelays,bookInfo,Keypriv);         
-            publishMessage = "发布成功到 " + ret.size + "个服务器。" ;
+            publishMessage = "成功发布到 " + ret.size + "个服务器。" ;
             setTimeout(() => {
                 isPublishing = false;
+                navigateTo('/writebook')
             }, 3000);
         },100);
+
+        setTimeout( async () => {
+                  
+            publishMessage = "发布可能失败，可以重新发布。" ;
+            setTimeout(() => {
+                isPublishing = false;
+                 
+            }, 3000);
+        },10000);
     };
 
 
-
+    function navigateTo(href) {
+        window.location.href = href;
+    }
 
     onMount(() => {
         document.addEventListener('paste', handlePaste);

@@ -134,9 +134,10 @@
     };
 
     const LogoutOk = () => {
-        Keypriv = '';
-        Keypub = '';
+        Keypriv   = '';
+        Keypub    = '';
         nsecValue = '';
+        npubValue = '';
      
         displayText = '登录';
         let storage = new WebStorage(localStorage);
@@ -174,6 +175,12 @@
         
        
 
+    }
+
+    function handleLinkClick() {
+        // 使用 window.location.href 进行跳转并强制刷新页面
+        window.location.href = '/writebook';
+        
     }
 </script>
 
@@ -293,6 +300,28 @@
     input:focus {
 	    border: 1px solid #d4237a; /*  */
     }
+
+    .modal-text-background {
+        background-color: #f3f4f6; /* 浅灰色背景，可按需调整 */
+        padding: 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+    }
+
+    /* 普通提示文字样式 */
+   .modal-text {
+        font-size: 1rem;
+        color: #333;
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    /* 警告提示文字样式 */
+   .modal-text-warning {
+        color: #e53e3e;
+        font-weight: 600;
+    }
+
 </style>
 
 <nav>
@@ -318,11 +347,25 @@
     <div class={`login-menu ${isMenuOpen ? 'open' : ''}`}>
         <ul>
             <!-- svelte-ignore a11y_invalid_attribute -->
-            <a href=""  on:click={() => openModal(1)} ><li >Login</li> </a>
-             <!-- svelte-ignore a11y_invalid_attribute -->
-            <a href=""  on:click={() => openModal(2)} ><li>Register</li></a>
-             <!-- svelte-ignore a11y_invalid_attribute -->
-            <a href=""  on:click={() => openModal(3)} ><li>Logout</li></a>
+            <a href=""  on:click={() => openModal(1)} >
+             <li >
+            {#if npubValue === ''}
+               Login
+               {:else}
+               切换用户 
+             {/if}
+              </li> 
+            </a>
+             
+            {#if npubValue === ''} 
+              <!-- svelte-ignore a11y_invalid_attribute -->
+              <a href=""  on:click={() => openModal(2)} ><li>Register</li></a>
+            {:else}
+              <!-- svelte-ignore a11y_invalid_attribute -->
+              <a href=""  on:click={handleLinkClick} ><li>我的书籍</li></a>
+              <!-- svelte-ignore a11y_invalid_attribute -->
+              <a href=""  on:click={() => openModal(3)} ><li>Logout</li></a>
+            {/if} 
         </ul>
     </div>
      
@@ -333,7 +376,9 @@
     </svelte:fragment>
     <div class="flex justify-center space-y-10">
         <div class="self-start w-full md:w-3/4 lg:w-1/2">
+           <div class="modal-text-background">
             <p>粘贴已有的nsec...登录</p>
+           </div> 
             <input 
                 type="text" 
                 placeholder="请输入nsec" 
@@ -353,7 +398,9 @@
     </svelte:fragment>
     <div class="flex justify-center space-y-10">
         <div class="self-start w-full md:w-3/4 lg:w-1/2">
-            <p>点击生成一个密钥</p>
+            <div class="modal-text-background">
+            <p class="modal-text">点击生成一个密钥</p>
+            </div>
             <div class="flex w-full max-w-md space-x-2">
             <input 
                 type="text"                  
@@ -383,8 +430,11 @@
     </svelte:fragment>
     <div class="flex justify-center space-y-10">
         <div class="self-start w-full md:w-3/4 lg:w-1/2">
-            <p>注销前请保存你的nsec</p>
-            <p>丢失将无法找回!</p>
+            <div class="modal-text-background">
+                        <p class="modal-text">注销前请保存你的nsec</p>
+                        <p class="modal-text modal-text-warning">丢失将无法找回!</p>
+            </div>
+          
             <input 
                 type="text" 
                 placeholder="" 
