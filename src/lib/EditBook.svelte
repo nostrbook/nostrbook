@@ -1,7 +1,7 @@
 
 <script lang="ts">
     import { defaultRelays } from '$lib/config';
-    import { booklist, read_book_chapter } from '$lib/bookevent';
+    import { booklist, read_book_chapter,createchapter } from '$lib/bookevent';
     import { getContext } from 'svelte';
     import { writable, get } from 'svelte/store';
     import { page } from '$app/stores';
@@ -9,11 +9,16 @@
     import SimpleMDE  from '$lib/simpleMDE.svelte';  
 
    let isLoading = false;
+   let saved = true;
    export let isWritebookOpen;
    export let bookId;
    export let bookTitle;
    let content;
+   let contentset;
    let chapterTitle;
+   let mdfilename;
+   let dMessage= "正在加载...."
+   let isOutline = false;
 
     const keyprivStore = getContext('keypriv');
     const keypubStore = getContext('keypub');
@@ -21,17 +26,24 @@
     let Keypub;
 
     function addChapter() {
-        // 这里可以添加实际的添加章节逻辑
+        isOutline = false;
+        mdfilename = "";
+         
         console.log('添加章节');
     }
-
-    function generateOutline() {
-        // 这里可以添加实际的生成大纲逻辑
-        console.log('生成大纲');
+    function editoutline(){
+        isOutline = true;
+        chapterTitle="大纲";
+        mdfilename = "_sidebar.md";
     }
 
-    const tableOfContents = [
-        { title: "第一章", link: "/chapter/" },
+    function outlineexample(){
+        contentset = `  * [第一章、 第一章标题](/chapter1.md)
+        \n* [第二章、 第二章标题](/chapter2.md)`;
+    }
+
+    let tableOfContents = [
+         
         
     ];
     function setLoading(state) {
@@ -39,12 +51,34 @@
     }
 
     const closeWritebook = () => {
+        if (saved == false){
+            if (chapterTitle != "" && isOutline == false){
+                 alert("请先保存数据");
+                return ;
+            }
+            if (content !=""){
+                alert("请先保存数据");
+                return ;
+            }
+        }
+
         isWritebookOpen = false;
     };
 
-    function handlerchapter(e) {
-        console.log(e);
+    function get_tags(tags, tagName) {
+        const urlEntry = tags.find(item => item[0] === tagName);
+        return urlEntry[1];
     }
+
+    function handlerchapter(e) {
+        
+        let title = get_tags(e.tags,'title');
+        console.log(title)
+        tableOfContents = [{title:title,id:e.id},...tableOfContents];
+ 
+    }
+
+
 
     function editbook(bookid) {
         
@@ -55,10 +89,11 @@
         setTimeout(async () => {
             try {
                 let ret = await read_book_chapter(defaultRelays, bookid, Keypub, handlerchapter);
+                setTimeout(() => {
+                    isLoading = false; 
+                }, 3000);
             } catch (error) {
-                console.error('加载章节失败:', error);
-            } finally {
-                setLoading(false);
+                console.error('读章节失败:', error);
             }
         }, 100);
     }    
@@ -69,13 +104,56 @@
     });
 
 
-    function CreateChapter(){
+    async function CreateChapter (){
+        if (isOutline == false){
+            if (chapterTitle == ""){ alert("标题不能为空"); return;}
+        }
+        
+        if (content == ""){ alert("内容不能为空"); return;}
+
+        dMessage= "正在发布";
+        isLoading = true;
+
+        console.log(bookId);
         console.log(chapterTitle,content);
+        setTimeout(async () => {
+            try {
+               let ret = await createchapter(defaultRelays,content,chapterTitle,mdfilename,bookId,Keypriv);
+               saved = true;
+               dMessage = "成功发布到 " + ret.size + "个服务器。" ;
+               setTimeout(() => {
+                    isLoading = false; 
+                }, 3000);
+
+            } catch (error) {
+                console.error('上传失败:', error);
+                dMessage = "上传失败 " + error;
+                setTimeout(() => {
+                    isLoading = false; 
+                }, 3000);
+
+            }  
+        }, 100);
+        
+       
     }
 
     $: if (isWritebookOpen) {
+        saved = false;
+        tableOfContents = [
+           
+        ];
+
         editbook(bookId);
     }
+
+    $: if (bookId) {
+        chapterTitle = "";
+        content = "";
+    }
+
+    $: if(chapterTitle){ saved=false;}
+    $: if(content){ saved=false;}
 
 </script>
 
@@ -207,6 +285,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 1001;
+         
     }
 
     .info-content {
@@ -231,36 +311,53 @@
             <span class="sr-only">关闭</span>
         </button>
         <div class="writebook-container">
-            <div class="middle-toc">
+            <div class="middle-toc flex flex-col relative">
                 <p class="text-xl font-bold text-center text-sky-500 uppercase"> &lt;&lt; {bookTitle} &gt;&gt; </p>
                 <div class="border-b border-gray-300 my-4"></div>
-                <button 
-                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2" 
-                on:click={addChapter}>
-                    新增章节
-                </button>
-                <button 
-                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" 
-                    on:click={generateOutline}>
-                    生成大纲
-                </button>
+
+
 
                 <ul>
+                  <li>
+                    <!-- svelte-ignore a11y_invalid_attribute -->
+                    <a href="" on:click= {() =>editoutline()} class="border border-gray-300 bg-blue-100 rounded-md px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer">编写大纲 + </a>
+                  </li>
                     {#each tableOfContents as toc}
                         <li>
                             <a href={toc.link}>{toc.title}</a>
                         </li>
                     {/each}
                 </ul>
+                 
+                <button 
+                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute bottom-2 " 
+                on:click={addChapter}>
+                    新增章节
+                </button>
+                
             </div>
             <div class="right-editor">
+             {#if isOutline}
+                <p class="flex items-center">
+                    编写大纲内容  
+                    <!-- svelte-ignore a11y_invalid_attribute -->
+                    <a href="" on:click={() => outlineexample()} class="bg-blue-100 ml-2">查看样例</a>
+                </p>
+             {:else}
+
                 <div class="flex items-center space-x-2">
                     <label for="title-input" class="font-bold">标题:</label>
                     <input type="text" bind:value={chapterTitle} id="title-input" placeholder="请输入标题" class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-               <div class="mt-4" style="height:85%;">
-                  <SimpleMDE bind:content={content}/>
+              {/if}   
+               <div class="mt-4" style="height:80%;">
+                  <SimpleMDE bind:content={content} bind:contentset={contentset}/>
                </div>
+              
+            <div class="flex items-center space-x-2">
+                <label for="mdfile-input" class=" ">Markdown文件名:</label>
+                <input type="text" bind:value={mdfilename} id="mdfile-input" placeholder="输入md文件名制作大纲:readme.md" class="rounded-md mt-1 block w-1/2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-xs">
+            </div>
                 <div class="flex justify-end mt-1">
                     <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" on:click={CreateChapter}>提交</button>
                 </div>
@@ -276,7 +373,7 @@
         <div class="info-content">
             <div class="flex items-center">
                 <div class="loading-spinner mr-3"></div>
-                <span>正在加载，请稍候...</span>
+                <span>{dMessage}</span>
             </div>
         </div>
     </div>

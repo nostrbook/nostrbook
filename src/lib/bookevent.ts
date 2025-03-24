@@ -48,7 +48,7 @@ export async function booklist ( relays,handlerevent ,pubkey){
     sub.on("event" ,handlerevent)
 }
 
-export async function createchapter(relays,content,title,bookid,Keypriv){
+export async function createchapter(relays,content,title,filename,bookid,Keypriv){
     const ndk = new NDK({
         explicitRelayUrls: relays,
         devWriteRelayUrls:relays,
@@ -63,10 +63,12 @@ export async function createchapter(relays,content,title,bookid,Keypriv){
     ndkEvent.tags = [
                 ['t','bookchapter'],
                 ['title',title],
+                ['file',filename],
                 ['e',bookid],
                 ];
     await ndkEvent.sign() 
-    let ok = await ndkEvent.publish(relaySets,2000,0);
+    let response = await ndkEvent.publish(relaySets,2000,0);
+    return response;
 }
 
 
@@ -79,11 +81,12 @@ export async function read_book_chapter ( relays,bookid ,pubkey,handlerevent){
     });
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
-    
-    let filters    = {kinds:[30023],'#t': ['chapter'], "#e":[bookid]}
+    console.log("connect..")
+    let filters    = {kinds:[30023],'#t': ['bookchapter'], "#e":[bookid]}
     if (pubkey) {
         filters.authors = [pubkey];
     }
+    console.log(filters);
 
     let sub = ndk.subscribe(filters,{},relaySets,true)
 
