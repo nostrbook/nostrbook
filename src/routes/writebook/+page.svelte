@@ -8,6 +8,7 @@
     import { page } from '$app/stores';
 
     let bookId;
+    let bookTitle;
     //$: bookId = $page.url.searchParams.get('bookId');
 
     let isWritebookOpen = false;
@@ -56,12 +57,13 @@
 
 
 
-    function editbook(bookid, pubkey) {
+    function editbook(bookid, title,pubkey) {
 
 
         if (pubkey !== Keypub) return;
         
         bookId = bookid;
+        bookTitle = title;
         isWritebookOpen = true;
 
     }
@@ -128,7 +130,7 @@
     {#each books as book}
         <div
             class="mb-4 clickable"
-            on:click={() => editbook(book.id, book.pubkey)}
+            on:click={() => editbook(book.id,book.content.title,book.pubkey)}
             role="button"
             tabindex="0"
             on:keydown={(e) => {
@@ -150,7 +152,7 @@
 </div>
 
  
-<EditBook  bind:isWritebookOpen={isWritebookOpen} bookId={bookId}/>
+<EditBook  bind:isWritebookOpen={isWritebookOpen} bookId={bookId} bookTitle={bookTitle}/>
  
 
 {#if isLoading}

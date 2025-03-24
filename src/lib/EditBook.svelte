@@ -11,6 +11,7 @@
    let isLoading = false;
    export let isWritebookOpen;
    export let bookId;
+   export let bookTitle;
    let content;
    let chapterTitle;
 
@@ -231,6 +232,8 @@
         </button>
         <div class="writebook-container">
             <div class="middle-toc">
+                <p class="text-xl font-bold text-center text-sky-500 uppercase"> &lt;&lt; {bookTitle} &gt;&gt; </p>
+                <div class="border-b border-gray-300 my-4"></div>
                 <button 
                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2" 
                 on:click={addChapter}>
@@ -255,7 +258,7 @@
                     <label for="title-input" class="font-bold">标题:</label>
                     <input type="text" bind:value={chapterTitle} id="title-input" placeholder="请输入标题" class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
-               <div class="mt-4" style="height:90%;">
+               <div class="mt-4" style="height:85%;">
                   <SimpleMDE bind:content={content}/>
                </div>
                 <div class="flex justify-end mt-1">
