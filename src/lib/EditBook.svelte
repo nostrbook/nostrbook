@@ -368,20 +368,7 @@
         font-size: 0.875rem;
     }
 
-    .title-input {
-        flex-grow: 1;
-        padding: 0.5rem;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-    }
 
-    .filename-input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-    }
 
     .button-group {
         display: flex;
@@ -437,6 +424,7 @@
 
                 <ul class="chapter-list">
                     <li class="chapter-item">
+                        <!-- svelte-ignore a11y_invalid_attribute -->
                         <a 
                             href="#" 
                             on:click|preventDefault={editoutline} 
@@ -447,6 +435,7 @@
                     </li>
                     {#each tableOfContents as toc (toc.id)}
                         <li class="chapter-item">
+                               <!-- svelte-ignore a11y_invalid_attribute -->
                             <a 
                                 href="#" 
                                 on:click|preventDefault={() => editchapter(toc.id)} 
@@ -470,6 +459,7 @@
                 {#if isOutline}
                     <div class="flex items-center mb-4">
                         <h3 class="font-medium">编写大纲内容</h3>
+                            <!-- svelte-ignore a11y_invalid_attribute -->
                         <a 
                             href="#" 
                             on:click|preventDefault={outlineexample} 
