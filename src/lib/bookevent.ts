@@ -121,7 +121,7 @@ export async function read_book_chapters ( relays,bookid ,pubkey,handlerevent){
 }
 
 
-export async function read_chapter ( relays,chapterid ,pubkey,handlerevent){
+export async function read_chapter ( relays,bookid,chapterid ,pubkey,handlerevent){
 
     const ndk = new NDK({
         explicitRelayUrls: relays,
@@ -131,10 +131,15 @@ export async function read_chapter ( relays,chapterid ,pubkey,handlerevent){
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     console.log("connect..")
-    let filters    = {kinds:[30023], "ids":[chapterid]}
+    let filters    = {kinds:[30023],"#e":[bookid]}
     if (pubkey) {
         filters.authors = [pubkey];
     }
+    if (chapterid)
+    {
+        filters.ids = [chapterid];
+    }
+
     console.log(filters);
 
     let sub = ndk.subscribe(filters,{},relaySets,true)

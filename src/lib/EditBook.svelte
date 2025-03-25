@@ -31,7 +31,32 @@
     let Keypub: string;
 
     let tableOfContents=[];
+    let timeTOC = [];
+    let outlineTOC= [];
+    let chapterMenu = "outline";
 
+    function handleSortChange(val){
+           chapterMenu = val;
+
+           if (val == "time") {
+             tableOfContents = timeTOC;
+           } 
+           if (val == "outline") {
+             tableOfContents = outlineTOC;
+           } 
+           console.log(tableOfContents);
+           
+    }
+
+    function updateTOC(TOC, newItem) {
+        return outlineTOC.map(item => {
+           
+            if (item.file === newItem.file) {
+                return { ...item, id: newItem.id };
+            }
+            return item;  
+        });
+    }
     // 工具函数
     function getTag(tags: string[][], tagName: string): string {
         const tagEntry = tags.find(item => item[0] === tagName);
@@ -76,6 +101,7 @@
     const closeWritebook = (ischeck: number): void => {
         if (ischeck === 0) {
             isWritebookOpen = false; 
+            window.location.reload();
             return;
         }
         
@@ -86,7 +112,7 @@
                 return;
             }
         }
-
+        window.location.reload();
         isWritebookOpen = false;
     };
 
@@ -99,11 +125,34 @@
 
         if (filename === "_sidebar.md") {
             eventOutline = e;
+            format_sidebar();
+            //更新 outlineTOC id
+            timeTOC.map(item => { updateTOC(outlineTOC,item)})
+            tableOfContents = outlineTOC;
+            
             return;
         }
-        tableOfContents = [{title:title,id:e.id,file:filename},...tableOfContents];
- 
- 
+        timeTOC = [{title:title,id:e.id,file:filename},...timeTOC];
+        updateTOC(outlineTOC,{title:title,id:e.id,file:filename});
+        updateTOC(tableOfContents,{title:title,id:e.id,file:filename});
+    }
+
+    function format_sidebar(){
+        let text = eventOutline.content;
+        console.log(text)
+        const regex = /\[([^\]]+)\]\(([^)]+)\)/g; 
+        let matches;
+        let results = [];
+        while ((matches = regex.exec(text)) !== null) {
+            const title = matches[1];    // 方括号内的标题（如 "第一章、 第一章标题"）
+            const mdFile = matches[2];   // 圆括号内的 .md 文件名（不含 /，如 "chapter1"）
+            
+            results.push({ title, file:mdFile.split('/').pop(),id:""});
+        }
+        outlineTOC = results;
+        // default 显示 大纲里内容
+     
+         
     }
 
     function handler_one_chapter(e): void {
@@ -114,10 +163,10 @@
     }
 
     // 编辑操作
-    async function editchapter(chapterid: string): Promise<void> {
+    async function editchapter(chapterid: string,filename:string): Promise<void> {
         setLoading(true);
         try {
-            await read_chapter(defaultRelays, chapterid, Keypub, handler_one_chapter);
+            await read_chapter(defaultRelays, bookId,chapterid, Keypub, handler_one_chapter);
         } catch (error) {
             console.error('读取章节失败:', error);
             dMessage = "读取章节失败";
@@ -163,7 +212,7 @@
             
             // 如果是新章节，添加到目录
             if (!isOutline) {
-                tableOfContents.unshift({
+                tableOfContents.push({
                     title: chapterTitle,
                     id: ret.id || "",
                     file: mdfilename
@@ -422,23 +471,19 @@
                 </h2>
                 <div class="border-b border-gray-300 my-2"></div>
 
-                <ul class="chapter-list">
-                    <li class="chapter-item">
-                        <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a 
-                            href="#" 
-                            on:click|preventDefault={editoutline} 
-                            class="chapter-link bg-blue-50 hover:bg-blue-100"
-                        >
-                            编写大纲 +
-                        </a>
-                    </li>
-                    {#each tableOfContents as toc (toc.id)}
+                <div class="tabs tabs-box">
+                    <input type="radio" name="my_tabs_1" class="tab" aria-label="大纲排列" checked="checked" on:click={() => handleSortChange('outline')}/>
+                    <input type="radio" name="my_tabs_1" class="tab" aria-label="时间排列"  on:click={() => handleSortChange('time')}/>
+                </div>
+                            
+                 <ul class="chapter-list">
+
+                    {#each tableOfContents as toc}
                         <li class="chapter-item">
                                <!-- svelte-ignore a11y_invalid_attribute -->
                             <a 
                                 href="#" 
-                                on:click|preventDefault={() => editchapter(toc.id)} 
+                                on:click|preventDefault={() => editchapter(toc.id,toc.file)} 
                                 class="chapter-link"
                             >
                                 {toc.title}
@@ -447,12 +492,31 @@
                     {/each}
                 </ul>
                 
-                <button 
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute bottom-2 "
-                    on:click={addChapter}
-                >
-                    新增章节
-                </button>
+                <div class="flex items-center gap-3 mb-4 absolute bottom-2">
+                    <!-- 新增章节按钮 -->
+                    <button
+                        class="flex items-center px-4 py-2 text-white bg-blue-400 hover:bg-blue-600 rounded-lg transition-colors shadow hover:shadow-md"
+                        on:click={addChapter}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        新增章节
+                    </button>
+
+                    <!-- 编写大纲链接 -->
+                    <!-- svelte-ignore a11y_invalid_attribute -->
+                    <a
+                        href="#"
+                        on:click|preventDefault={editoutline}
+                        class="flex items-center px-4 py-2 text-white bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors" style="color:oklch(0.606 0.25 292.717)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        {eventOutline ? '更新大纲' : '增加大纲'}
+                    </a>
+                </div>
             </div>
             
             <div class="right-editor">
