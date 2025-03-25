@@ -17,14 +17,25 @@
 	font-family: var(--font-body);
 	color: var(--color-text);
 }
-
 body {
 	min-height: 100vh;
 	margin: 0;
-	background-attachment: fixed;
 	background-color: var(--color-bg-1);
-	background-image: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 100%), 
-        linear-gradient(117deg, var(--color-bg-0) 0%, hsl(267deg 0% 93.85%) 15%, var(--color-bg-2) 50%)
+	background-image: 
+	  radial-gradient(
+		50% 50% at 50% 50%, 
+		rgba(255, 255, 255, 0.75) 0%, 
+		rgba(255, 255, 255, 0) 100%
+	  ), 
+	  linear-gradient(
+		117deg, 
+		var(--color-bg-0) 0%, 
+		hsl(267deg 0% 93.85%) 15%, 
+		var(--color-bg-2) 50%
+	  );
+	background-attachment: scroll; /* 修改为默认滚动 */
+	background-size: 100% 100%; /* 关键修复 */
+	background-repeat: no-repeat;
 }
 
 h1,

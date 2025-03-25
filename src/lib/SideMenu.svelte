@@ -22,10 +22,34 @@
     let displayText = '登录';
     
 
+    // 图标配置（使用Heroicons）
+    const icons = {
+    home: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>`,
+    create: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>`,
+    about: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    user: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
+    };
+
+    // 菜单配置
     const menuItems = [
-        { text: '首页', link: '/', requiresLogin: false },
-        { text: '创建新书', link: '/createbook', requiresLogin: true },
-        { text: '关于', link: '/about', requiresLogin: false }
+    { 
+        text: '首页', 
+        link: '/', 
+        requiresLogin: false,
+        icon: icons.home // 直接引用图标
+    },
+    { 
+        text: '创建新书', 
+        link: '/createbook', 
+        requiresLogin: true,
+        icon: icons.create
+    },
+    { 
+        text: '关于', 
+        link: '/about', 
+        requiresLogin: false,
+        icon: icons.about
+    }
     ];
 
 
@@ -182,6 +206,24 @@
         window.location.href = '/writebook';
         
     }
+
+    let menuRef;
+
+    // 点击菜单外部关闭
+    function handleClickOutside(event) {
+        console.log(menuRef);
+        if (menuRef && !menuRef.contains(event.target)) {
+            isMenuOpen = false;
+        }
+    }
+
+    // 添加全局点击监听
+    onMount(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+        document.removeEventListener('click', handleClickOutside);
+        };
+    });
 </script>
 
  <style>
@@ -321,30 +363,52 @@
         color: #e53e3e;
         font-weight: 600;
     }
+    .menu-icon {
+        
+        stroke: currentColor; /* 继承文字颜色 */
+    }
 
 </style>
 
 <nav>
-    <ul >
-        {#each menuItems as item}
-        <a data-sveltekit-preload-data="tap" href="{item.link}" on:click={(event) => handleMenuItemClick(event, item)}>
-            <li>
-                <p>{item.text}</p>
-            </li>
+    <ul class="menu bg-base-200 rounded-box w-full p-2">
+    {#each menuItems as item}
+        <li>
+
+        <a
+        data-sveltekit-preload-data="tap"
+        href={item.link}
+        
+        class="flex items-center gap-3 px-4 py-3 text-base"  style="color:oklch(0.45 0.033 256.848)"
+        >
+        <span class="relative top-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
+            {@html item.icon}
+        </span>
+        <span class="relative text-lg leading-none">{item.text}</span> <!-- 调大字体并清除行高影响 -->
         </a>
-        {/each}
-    </ul>    
+        </li>
+    {/each}
+    </ul>  
      
 
 </nav>    
     <!-- svelte-ignore a11y_invalid_attribute -->
-    <a href="" class="fixed bottom-4" on:click|preventDefault={toggleMenu}>
-        <li>
-            <p>{displayText}</p>
-        </li>
+ 
+    <a
+        data-sveltekit-preload-data="tap"
+        href=""
+        on:click|preventDefault={toggleMenu}
+        class="flex items-center gap-3 px-4 py-3 text-base absolute bottom-4"  style="color:oklch(0.45 0.033 256.848)"
+        >
+        <span class="relative top-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
+            {@html icons.user }
+        </span>
+        <span class="relative text-lg leading-none">{displayText}</span> <!-- 调大字体并清除行高影响 -->
     </a>
+         
+
     <!-- 登录菜单 -->
-    <div class={`login-menu ${isMenuOpen ? 'open' : ''}`}>
+    <div class={`login-menu ${isMenuOpen ? 'open' : ''}`} use:menuRef>
         <ul>
             <!-- svelte-ignore a11y_invalid_attribute -->
             <a href=""  on:click={() => openModal(1)} >
