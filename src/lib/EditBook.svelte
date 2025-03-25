@@ -1,149 +1,222 @@
-
 <script lang="ts">
     import { defaultRelays } from '$lib/config';
-    import { booklist, read_book_chapter,createchapter } from '$lib/bookevent';
+    import { booklist, read_book_chapters, createchapter, read_chapter, updatechapter } from '$lib/bookevent';
     import { getContext } from 'svelte';
     import { writable, get } from 'svelte/store';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';  
-    import SimpleMDE  from '$lib/simpleMDE.svelte';  
+    import SimpleMDE from '$lib/simpleMDE.svelte';  
+  
 
-   let isLoading = false;
-   let saved = true;
-   export let isWritebookOpen;
-   export let bookId;
-   export let bookTitle;
-   let content;
-   let contentset;
-   let chapterTitle;
-   let mdfilename;
-   let dMessage= "正在加载...."
-   let isOutline = false;
+    // 状态管理
+    let isLoading = false;
+    let saved = true;
+    export let isWritebookOpen: boolean;
+    export let bookId: string;
+    export let bookTitle: string;
+    
+    let content: string = "";
+    let contentset: string = "";
+    let chapterTitle: string = "";
+    let mdfilename: string = "";
+    let dMessage: string = "正在加载....";
+    let isOutline: boolean = false;
+    let eventOutline ;
+    let eventupdate ;
+    let newchapter: boolean = false;
 
     const keyprivStore = getContext('keypriv');
     const keypubStore = getContext('keypub');
-    let Keypriv;
-    let Keypub;
+    let Keypriv: string;
+    let Keypub: string;
 
-    function addChapter() {
+    let tableOfContents=[];
+
+    // 工具函数
+    function getTag(tags: string[][], tagName: string): string {
+        const tagEntry = tags.find(item => item[0] === tagName);
+        return tagEntry ? tagEntry[1] : "";
+    }
+
+    // 章节操作
+    function addChapter(): void {
         isOutline = false;
         mdfilename = "";
-         
-        console.log('添加章节');
-    }
-    function editoutline(){
-        isOutline = true;
-        chapterTitle="大纲";
-        mdfilename = "_sidebar.md";
+        chapterTitle = "";
+        content = "";
+        contentset = "";
+        newchapter = true;
     }
 
-    function outlineexample(){
-        contentset = `  * [第一章、 第一章标题](/chapter1.md)
+    function editoutline(): void {
+        isOutline = true;
+        chapterTitle = "大纲";
+        content = "";
+        mdfilename = "_sidebar.md";
+        
+        if (eventOutline) {
+            contentset = eventOutline.content;
+            eventupdate = eventOutline;
+            newchapter = false;
+        } else {
+            newchapter = true;
+        }
+    }
+
+    function outlineexample(): void {
+        contentset = `* [第一章、 第一章标题](/chapter1.md)
         \n* [第二章、 第二章标题](/chapter2.md)`;
     }
 
-    let tableOfContents = [
-         
-        
-    ];
-    function setLoading(state) {
+    function setLoading(state: boolean): void {
         isLoading = state;
     }
 
-    const closeWritebook = () => {
-        if (saved == false){
-            if (chapterTitle != "" && isOutline == false){
-                 alert("请先保存数据");
-                return ;
-            }
-            if (content !=""){
+    // 关闭书籍编辑器
+    const closeWritebook = (ischeck: number): void => {
+        if (ischeck === 0) {
+            isWritebookOpen = false; 
+            return;
+        }
+        
+        // 检查是否保存
+        if (!saved) {
+            if ((chapterTitle !== "" && !isOutline) || content !== "") {
                 alert("请先保存数据");
-                return ;
+                return;
             }
         }
 
         isWritebookOpen = false;
     };
 
-    function get_tags(tags, tagName) {
-        const urlEntry = tags.find(item => item[0] === tagName);
-        return urlEntry[1];
-    }
+    // 事件处理
+    function handlerbookchapters(e): void {
+        console.log(e)
+        const title = getTag(e.tags, 'title');
+        const filename = getTag(e.tags, 'file');
+        console.log(title,filename)
 
-    function handlerchapter(e) {
-        
-        let title = get_tags(e.tags,'title');
-        console.log(title)
-        tableOfContents = [{title:title,id:e.id},...tableOfContents];
+        if (filename === "_sidebar.md") {
+            eventOutline = e;
+            return;
+        }
+        tableOfContents = [{title:title,id:e.id,file:filename},...tableOfContents];
+ 
  
     }
 
+    function handler_one_chapter(e): void {
+        chapterTitle = getTag(e.tags, 'title');
+        mdfilename = getTag(e.tags, 'file');
+        contentset = e.content;
+        eventupdate = e;
+    }
 
+    // 编辑操作
+    async function editchapter(chapterid: string): Promise<void> {
+        setLoading(true);
+        try {
+            await read_chapter(defaultRelays, chapterid, Keypub, handler_one_chapter);
+        } catch (error) {
+            console.error('读取章节失败:', error);
+            dMessage = "读取章节失败";
+        } finally {
+            setTimeout(() => isLoading = false, 3000);
+        }
+    }
 
-    function editbook(bookid) {
-        
+    async function editbook(bookid: string): Promise<void> {
         bookId = bookid;
         isWritebookOpen = true;
         
         setLoading(true);
-        setTimeout(async () => {
-            try {
-                let ret = await read_book_chapter(defaultRelays, bookid, Keypub, handlerchapter);
-                setTimeout(() => {
-                    isLoading = false; 
-                }, 3000);
-            } catch (error) {
-                console.error('读章节失败:', error);
-            }
-        }, 100);
-    }    
-
-    onMount(() => {
-        Keypriv = get(keyprivStore);
-        Keypub = get(keypubStore);
-    });
-
-
-    async function CreateChapter (){
-        if (isOutline == false){
-            if (chapterTitle == ""){ alert("标题不能为空"); return;}
+        try {
+            await read_book_chapters(defaultRelays, bookId, Keypub, handlerbookchapters);
+        } catch (error) {
+            console.error('读取章节失败:', error);
+            dMessage = "读取书籍章节失败";
+        } finally {
+            setTimeout(() => isLoading = false, 3000);
         }
-        
-        if (content == ""){ alert("内容不能为空"); return;}
-
-        dMessage= "正在发布";
-        isLoading = true;
-
-        console.log(bookId);
-        console.log(chapterTitle,content);
-        setTimeout(async () => {
-            try {
-               let ret = await createchapter(defaultRelays,content,chapterTitle,mdfilename,bookId,Keypriv);
-               saved = true;
-               dMessage = "成功发布到 " + ret.size + "个服务器。" ;
-               setTimeout(() => {
-                    isLoading = false; 
-                }, 3000);
-
-            } catch (error) {
-                console.error('上传失败:', error);
-                dMessage = "上传失败 " + error;
-                setTimeout(() => {
-                    isLoading = false; 
-                }, 3000);
-
-            }  
-        }, 100);
-        
-       
     }
 
+    // 创建/更新章节
+    async function createChapter(): Promise<void> {
+        if (!isOutline && chapterTitle === "") {
+            alert("标题不能为空");
+            return;
+        }
+        
+        if (content === "") {
+            alert("内容不能为空");
+            return;
+        }
+
+        dMessage = "正在发布";
+        isLoading = true;
+
+        try {
+            const ret = await createchapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
+            saved = true;
+            dMessage = `成功发布到 ${ret.size} 个服务器。`;
+            
+            // 如果是新章节，添加到目录
+            if (!isOutline) {
+                tableOfContents.unshift({
+                    title: chapterTitle,
+                    id: ret.id || "",
+                    file: mdfilename
+                });
+            }
+        } catch (error) {
+            console.error('上传失败:', error);
+            dMessage = `上传失败: ${error instanceof Error ? error.message : String(error)}`;
+        } finally {
+            setTimeout(() => isLoading = false, 3000);
+        }
+    }
+
+    async function updateChapter(): Promise<void> {
+        if (!isOutline && chapterTitle === "") {
+            alert("标题不能为空");
+            return;
+        }
+        
+        if (content === "") {
+            alert("内容不能为空");
+            return;
+        }
+
+        dMessage = "正在发布";
+        isLoading = true;
+
+        try {
+            const tagd = getTag(eventupdate?.tags || [], "d");
+            const ret = await updatechapter(defaultRelays, content, chapterTitle, mdfilename, bookId, tagd, Keypriv);
+            saved = true;
+            dMessage = `成功发布到 ${ret.size} 个服务器。`;
+        } catch (error) {
+            console.error('上传失败:', error);
+            dMessage = `上传失败: ${error instanceof Error ? error.message : String(error)}`;
+        } finally {
+            setTimeout(() => isLoading = false, 3000);
+        }
+    }
+
+    function submitChapter(): void {
+        if (newchapter) {
+            createChapter();
+        } else {
+            updateChapter();
+        }
+        newchapter = false;
+    }
+
+    // 响应式语句
     $: if (isWritebookOpen) {
         saved = false;
-        tableOfContents = [
-           
-        ];
-
+        tableOfContents.length = 0; // 清空数组
         editbook(bookId);
     }
 
@@ -152,14 +225,17 @@
         content = "";
     }
 
-    $: if(chapterTitle){ saved=false;}
-    $: if(content){ saved=false;}
+    $: if (chapterTitle) { saved = false; }
+    $: if (content) { saved = false; }
 
+    // 组件挂载
+    onMount(() => {
+        Keypriv = get(keyprivStore);
+        Keypub = get(keypubStore);
+    });
 </script>
 
-
 <style>
-
     .writebook-overlay {
         position: fixed;
         top: 0;
@@ -175,89 +251,55 @@
 
     .writebook-container {
         display: flex;
-        width: 80%;
-        height: 80vh;
+        width: min(90%, 1200px);
+        height: min(90vh, 800px);
         background-color: white;
         border-radius: 10px;
         overflow: hidden;
+        position: relative;
     }
 
-
-
-    a:hover {
-        background-color: #f0f0f0;
-    }
-
-
-   .middle-toc {
+    .middle-toc {
         width: 25%;
-        background-color: #e0e0e0;
-        padding: 10px;
-        border-radius: 10px 0 0 10px;
-        margin: 10px 0 10px 10px;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        overflow-y: auto;
     }
 
     .right-editor {
         width: 75%;
-        background-color: white;
-        padding: 10px;
-        border-radius: 0 10px 10px 0;
-        margin: 10px 10px 10px 0;
-        border-left: 1px solid #ccc;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
     .close-button {
-        position: relative;
-        padding: 0;
-        border: none;
-        background: none;
-        cursor: pointer;
-    }
-
-    .close-button span:first-child {
-        font-size: 20px; /* 可以根据实际情况调整大小 */
-        display: inline-block;
-        width: 30px; /* 可以根据实际情况调整宽度 */
-        height: 30px; /* 可以根据实际情况调整高度 */
-        line-height: 30px; /* 使 “×” 垂直居中 */
-        text-align: center;
-        background-color: #ccc; /* 添加背景颜色，这里用灰色示例，可按需修改 */
-        border-radius: 50%; /* 使背景呈圆形 */
-        margin-right: 5px; /* 调整 “×” 和文字的间距 */
-    }
-
-    .close-button span.sr-only {
         position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
+        top: 1rem;
+        right: 1rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1001;
+        border: none;
+        font-size: 1.2rem;
+        color: #6c757d;
     }
 
-    ul {
-        list-style-type: none;
-        padding: 0;
+    .close-button:hover {
+        background-color: #e9ecef;
     }
 
-    li {
-        margin-bottom: 8px;
-    }
-
-    a {
-        text-decoration: none;
-        color: #333;
-        display: block;
-        padding: 8px 12px;
-        border-radius: 4px;
-        transition: background-color 0.2s ease;
-    }
-
-    a:hover {
-        background-color: #f0f0f0;
+    .editor-content {
+        flex-grow: 1;
+        min-height: 0;
+        margin-bottom: 1rem;
     }
 
     .loading-spinner {
@@ -270,23 +312,17 @@
     }
 
     @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
+        to { transform: rotate(360deg); }
     }
 
     .info-modal {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         background-color: rgba(0, 0, 0, 0.5);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 1001;
-         
     }
 
     .info-content {
@@ -296,77 +332,201 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
-    input:focus {
-	    border: 1px solid #d4237a; /*  */
+    .chapter-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        overflow-y: auto;
+        flex-grow: 1;
     }
 
+    .chapter-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .chapter-link {
+        display: block;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        color: #495057;
+        transition: background-color 0.2s;
+    }
+
+    .chapter-link:hover {
+        background-color: #e9ecef;
+        text-decoration: none;
+    }
+
+    .outline-example-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        background-color: #e7f5ff;
+        border-radius: 0.25rem;
+        color: #1971c2;
+        margin-left: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .title-input {
+        flex-grow: 1;
+        padding: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+
+    .filename-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
+
+    .button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .button-primary {
+        background-color: #1971c2;
+        color: white;
+        border: none;
+    }
+
+    .button-primary:hover {
+        background-color: #1864ab;
+    }
+
+    .button-danger {
+        background-color: #f03e3e;
+        color: white;
+        border: none;
+    }
+
+    .button-danger:hover {
+        background-color: #e03131;
+    }
+ 
+    input:focus {
+	    border: 1px solid #d4237a; /*  */
+    }    
 </style>
 
-
 {#if isWritebookOpen}
- 
     <div class="writebook-overlay">
-        <button class="close-button" on:click={closeWritebook}>
-            <span aria-hidden="true">×</span>
-            <span class="sr-only">关闭</span>
+        <button class="close-button" on:click={() => closeWritebook(1)} aria-label="关闭编辑器">
+            ×
         </button>
         <div class="writebook-container">
-            <div class="middle-toc flex flex-col relative">
-                <p class="text-xl font-bold text-center text-sky-500 uppercase"> &lt;&lt; {bookTitle} &gt;&gt; </p>
-                <div class="border-b border-gray-300 my-4"></div>
+            <div class="middle-toc">
+                <h2 class="text-xl font-bold text-center text-sky-500 uppercase mb-4">
+                    &lt;&lt; {bookTitle} &gt;&gt;
+                </h2>
+                <div class="border-b border-gray-300 my-2"></div>
 
-
-
-                <ul>
-                  <li>
-                    <!-- svelte-ignore a11y_invalid_attribute -->
-                    <a href="" on:click= {() =>editoutline()} class="border border-gray-300 bg-blue-100 rounded-md px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer">编写大纲 + </a>
-                  </li>
-                    {#each tableOfContents as toc}
-                        <li>
-                            <a href={toc.link}>{toc.title}</a>
+                <ul class="chapter-list">
+                    <li class="chapter-item">
+                        <a 
+                            href="#" 
+                            on:click|preventDefault={editoutline} 
+                            class="chapter-link bg-blue-50 hover:bg-blue-100"
+                        >
+                            编写大纲 +
+                        </a>
+                    </li>
+                    {#each tableOfContents as toc (toc.id)}
+                        <li class="chapter-item">
+                            <a 
+                                href="#" 
+                                on:click|preventDefault={() => editchapter(toc.id)} 
+                                class="chapter-link"
+                            >
+                                {toc.title}
+                            </a>
                         </li>
                     {/each}
                 </ul>
-                 
+                
                 <button 
-                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute bottom-2 " 
-                on:click={addChapter}>
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute bottom-2 "
+                    on:click={addChapter}
+                >
                     新增章节
                 </button>
-                
             </div>
+            
             <div class="right-editor">
-             {#if isOutline}
-                <p class="flex items-center">
-                    编写大纲内容  
-                    <!-- svelte-ignore a11y_invalid_attribute -->
-                    <a href="" on:click={() => outlineexample()} class="bg-blue-100 ml-2">查看样例</a>
-                </p>
-             {:else}
-
-                <div class="flex items-center space-x-2">
-                    <label for="title-input" class="font-bold">标题:</label>
-                    <input type="text" bind:value={chapterTitle} id="title-input" placeholder="请输入标题" class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                {#if isOutline}
+                    <div class="flex items-center mb-4">
+                        <h3 class="font-medium">编写大纲内容</h3>
+                        <a 
+                            href="#" 
+                            on:click|preventDefault={outlineexample} 
+                            class="outline-example-link"
+                        >
+                            查看样例
+                        </a>
+                    </div>
+                {:else}
+                    <div class="flex items-center gap-2 mb-4">
+                        <label for="title-input" class="font-medium">标题:</label>
+                        <input 
+                            type="text" 
+                            bind:value={chapterTitle} 
+                            id="title-input" 
+                            placeholder="请输入标题" 
+                            class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        >
+                    </div>
+                {/if}
+                
+                <div class="editor-content">
+                    <SimpleMDE bind:content={content} bind:contentset={contentset}/>
                 </div>
-              {/if}   
-               <div class="mt-4" style="height:80%;">
-                  <SimpleMDE bind:content={content} bind:contentset={contentset}/>
-               </div>
-              
-            <div class="flex items-center space-x-2">
-                <label for="mdfile-input" class=" ">Markdown文件名:</label>
-                <input type="text" bind:value={mdfilename} id="mdfile-input" placeholder="输入md文件名制作大纲:readme.md" class="rounded-md mt-1 block w-1/2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-xs">
-            </div>
-                <div class="flex justify-end mt-1">
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" on:click={CreateChapter}>提交</button>
+                
+                <div class="mb-4">
+                    <label for="mdfile-input" class="block text-sm font-medium mb-1">
+                        Markdown文件名:
+                    </label>
+                    <input 
+                        type="text" 
+                        bind:value={mdfilename} 
+                        id="mdfile-input" 
+                        placeholder="输入md文件名制作大纲:readme.md" 
+                        class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                </div>
+
+                <div class="button-group">
+                    <button 
+                        class="button button-danger" 
+                        on:click={() => closeWritebook(0)}
+                    >
+                        不保存退出
+                    </button>
+                    <button 
+                        class="button button-primary" 
+                        on:click={submitChapter}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? '处理中...' : '提交'}
+                    </button>
                 </div>
             </div>
         </div>
     </div>
- 
 {/if}
-
 
 {#if isLoading}
     <div class="info-modal">
