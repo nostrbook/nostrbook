@@ -89,8 +89,9 @@
     }
 
     function outlineexample(): void {
-        contentset = `* [第一章、 第一章标题](/chapter1.md)
-        \n* [第二章、 第二章标题](/chapter2.md)`;
+        contentset = `- [首页](/readme.md)
+        \n- [第一章、 第一章标题](/chapter1.md)
+        \n- [第二章、 第二章标题](/chapter2.md)`;
     }
 
     function setLoading(state: boolean): void {
@@ -121,7 +122,7 @@
     function handlerbookchapters(e): void {
         console.log(e)
         const title = getTag(e.tags, 'title');
-        const filename = getTag(e.tags, 'file');
+        const filename = getTag(e.tags, 'd');
         console.log(title,filename)
 
         if (filename === "_sidebar.md") {
@@ -159,7 +160,7 @@
 
     function handler_one_chapter(e): void {
         chapterTitle = getTag(e.tags, 'title');
-        mdfilename = getTag(e.tags, 'file');
+        mdfilename = getTag(e.tags, 'd');
         contentset = e.content;
         eventupdate = e;
     }
@@ -585,7 +586,7 @@
                         type="text" 
                         bind:value={mdfilename} 
                         id="mdfile-input" 
-                        placeholder="输入md文件名制作大纲:readme.md" 
+                        placeholder="制作大纲需要md文件名:readme.md" 
                         class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                 </div>

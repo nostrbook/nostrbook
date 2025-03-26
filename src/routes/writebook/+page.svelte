@@ -9,7 +9,6 @@
 
     let bookId;
     let bookTitle;
-    //$: bookId = $page.url.searchParams.get('bookId');
 
     let isWritebookOpen = false;
 

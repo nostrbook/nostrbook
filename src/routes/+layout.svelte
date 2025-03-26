@@ -1,3 +1,5 @@
+
+
 <script lang="ts">
  
     import '../app.css';
@@ -5,6 +7,7 @@
     import SideMenu from '../lib/SideMenu.svelte';
     import { setContext } from'svelte';
     import { writable } from'svelte/store';
+    import { page } from '$app/stores';
 
     //页面的左右结构来共享变量 
     // 创建可写存储来存储 keypriv 和 keypub
@@ -14,6 +17,15 @@
     // 设置上下文
     setContext('keypriv', keyprivStore);
     setContext('keypub', keypubStore);
+
+    let layoutMode = 0;
+
+    $: if (page){
+        let pathname = $page.url.pathname;
+        if (pathname.startsWith('/books')){
+            layoutMode = 1;
+        }
+    }
 
 
 </script>
@@ -42,11 +54,16 @@
     }
 </style>
 
+{#if layoutMode == 0}
 <div class="container mx-auto max-w-7xl flex h-screen">
     <div class="side-menu">
         <SideMenu />
     </div>
     <div class="content">
-        <slot />
+      <slot />
     </div>
 </div>    
+
+{:else}
+<slot />
+{/if}

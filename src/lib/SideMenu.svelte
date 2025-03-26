@@ -259,28 +259,7 @@
         padding: 0;
     }
 
-    li p {
-        margin-left: 0.5rem;
-        font-size: 1.15rem;
-        /* 进一步减小上下内边距 */
-        padding: 0.1rem 0; 
-        margin-bottom: 0;
-    }
-    a.fixed {
-         
-        position: absolute; /* 设置链接为绝对定位 */
-         
-        left: 0; /* 靠左对齐 */
-        text-decoration: none;
-        list-style: none;
-        padding: 0;
-        flex-flow: column;
-        justify-content: left;
-        gap: 0.5rem;
-        width: 80%; /* 设置宽度为 80% */
-        left: 50%; /* 将元素左边缘定位到父元素宽度的 50% 处 */
-        transform: translateX(-50%); /* 将元素向左移动自身宽度的 50% */
-    }
+
 
 
     .login-menu {

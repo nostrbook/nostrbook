@@ -1,0 +1,46 @@
+import type { RequestHandler } from './$types';
+import { defaultRelays } from '$lib/config';
+import { booklist, read_book_chapters,  read_chapter, read_chapter_docs } from '$lib/bookevent';
+
+export const GET: RequestHandler = async ({ params }) => {
+    console.log(params);
+    let bookId = params.bookId;
+    let mdfile = params.mdfile;
+
+    if (mdfile == "_404.md") {
+       return new Response('Not Found', {
+            status: 404,
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8'
+            }
+        });
+    }
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+          reject(new Error('404'));
+      }, 10000); // 10 秒超时
+  });
+  
+  const contentPromise = new Promise<string>((resolve) => {
+      read_chapter_docs(defaultRelays, bookId, mdfile, (e) => resolve(e.content));
+  });
+  
+  try {
+      const content = await Promise.race([contentPromise, timeoutPromise]);
+      return new Response(content, {
+          headers: {
+              'Content-Type': 'text/plain; charset=utf-8'
+          }
+      });
+  } catch (error) {
+      if (error.message === '404') {
+          return new Response('Not Found', {
+              status: 404,
+              headers: {
+                  'Content-Type': 'text/plain; charset=utf-8'
+              }
+          });
+      }
+    }
+  };

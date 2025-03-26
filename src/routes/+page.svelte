@@ -32,6 +32,9 @@
         
     }
  
+    function gobooks(bookid,title){
+        window.location.href = "/books/" +bookid + "?title="+title;
+    }
     function formatTimestamp(timestamp) {
         if (String(timestamp).length < 13) {
             timestamp = timestamp * 1000;
@@ -97,6 +100,10 @@
         border-radius: 0.375rem;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
+    div.clickable:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        transform: scale(1.05);
+    }
 
 </style>
 
@@ -105,9 +112,19 @@
 </h1>
 <hr class="my-4 border-gray-300">
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" >
+
     {#each books as book}
-        <div class="mb-4">
+        <div class="mb-4  clickable "        
+            on:click={() => gobooks(book.id,book.content.title)}
+            role="button"
+            tabindex="0"
+            on:keydown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    gobooks(book.id ,book.content.title);
+                }
+            }} >
+
            <img src={book.content.coverurl} alt="封面图片预览" class="w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
             <div class="p-2  bg-gray-100 border border-gray-300" style="border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem; border-top-left-radius: 0; border-top-right-radius: 0;">
                 <h3 class="text-lg font-bold mb-1">{book.content.title}</h3>
