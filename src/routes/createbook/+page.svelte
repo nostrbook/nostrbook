@@ -230,7 +230,7 @@
 </style>
 
 <div class="p-8 max-w-md mx-auto">
-    <p class="text-2xl font-bold text-center text-gray-800 mb-4">创建一本新书</p>
+    <p class="text-2xl font-bold text-center text-gray-800 mb-4">创作一本新书</p>
     {#if coverImage}
         <div class="mb-4">
             <img src={coverImage} alt="封面图片预览" class="rounded-md" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;" />

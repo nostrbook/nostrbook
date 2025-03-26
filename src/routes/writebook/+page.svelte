@@ -118,12 +118,12 @@
 <div class="relative p-8 rounded-md">
     <!-- 创建新书按钮 -->
     <button class="absolute top-4 right-4 bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded inline-block" on:click={navigateToCreateBook}>
-        写一本书
+        开启创作
     </button>
 </div>
 
 {#if books.length === 0 && !isLoading}
-    <p class="text-gray-700">你还没有开始写书哦，点击右上角的“写一本书”按钮开始创作吧！</p>
+    <p class="text-gray-700">您还没有开始写书哦，点击右上角的“开启创作”按钮来开始创作之旅吧！</p>
 {/if}
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

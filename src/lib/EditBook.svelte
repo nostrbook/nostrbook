@@ -50,7 +50,7 @@
 
     function updateTOC(TOC, newItem) {
         return outlineTOC.map(item => {
-           
+             
             if (item.file === newItem.file) {
                 return { ...item, id: newItem.id };
             }
@@ -94,6 +94,7 @@
     }
 
     function setLoading(state: boolean): void {
+        if (state == true) dMessage = "正在加载";
         isLoading = state;
     }
 
@@ -127,14 +128,15 @@
             eventOutline = e;
             format_sidebar();
             //更新 outlineTOC id
-            timeTOC.map(item => { updateTOC(outlineTOC,item)})
+            timeTOC.map(item => { outlineTOC = updateTOC(outlineTOC,item)})
             tableOfContents = outlineTOC;
             
             return;
         }
         timeTOC = [{title:title,id:e.id,file:filename},...timeTOC];
-        updateTOC(outlineTOC,{title:title,id:e.id,file:filename});
-        updateTOC(tableOfContents,{title:title,id:e.id,file:filename});
+        outlineTOC = updateTOC(outlineTOC,{title:title,id:e.id,file:filename});
+        tableOfContents= updateTOC(tableOfContents,{title:title,id:e.id,file:filename});
+         
     }
 
     function format_sidebar(){
@@ -164,6 +166,20 @@
 
     // 编辑操作
     async function editchapter(chapterid: string,filename:string): Promise<void> {
+        isOutline = false;
+        chapterTitle="";
+        contentset="";
+        mdfilename="";
+        
+        if (chapterid==""){
+            dMessage  = "没有对应的章节ID";
+            isLoading = true;
+            setTimeout(()=>{
+                isLoading = false;
+            },3000);
+            return ;
+        }
+
         setLoading(true);
         try {
             await read_chapter(defaultRelays, bookId,chapterid, Keypub, handler_one_chapter);
@@ -200,6 +216,18 @@
         if (content === "") {
             alert("内容不能为空");
             return;
+        }
+
+        let hasSameFilename = false;
+        for (let item of timeTOC) {
+            if (item.file === mdfilename) {
+                hasSameFilename = true;
+                break;
+            }
+        }
+        if (hasSameFilename){
+            alert("有相同的文件名:"+mdfilename+",请更换markdown文件名！");
+            return ;
         }
 
         dMessage = "正在发布";

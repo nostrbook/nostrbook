@@ -39,7 +39,7 @@
         icon: icons.home // 直接引用图标
     },
     { 
-        text: '创建新书', 
+        text: '开启创作', 
         link: '/createbook', 
         requiresLogin: true,
         icon: icons.create
@@ -62,20 +62,9 @@
         isMenuOpen = !isMenuOpen;
     };
 
-    // 点击页面其他地方关闭菜单
-    const closeMenuOnClickOutside = (event: MouseEvent) => {
-        const target = event.target as HTMLElement;
-        const loginLink = document.querySelector('.fixed');
-        const menu = document.querySelector('.login-menu');
-        if (menu && loginLink) {
-            if (!menu.contains(target) && !loginLink.contains(target)) {
-                isMenuOpen = false;
-            }
-        }
-    };
-
+  
     onMount(() => {
-        document.addEventListener('click', closeMenuOnClickOutside);
+        
         let storage = new WebStorage(localStorage);
         let keyPrivhex = storage.get("keyPriv");
          
@@ -93,9 +82,7 @@
         }
 
 
-        return () => {
-            document.removeEventListener('click', closeMenuOnClickOutside);
-        };
+    
 
  
     });
@@ -207,12 +194,12 @@
         
     }
 
-    let menuRef;
+    let loginRef;
 
     // 点击菜单外部关闭
     function handleClickOutside(event) {
-        console.log(menuRef);
-        if (menuRef && !menuRef.contains(event.target)) {
+         
+        if (!loginRef.contains(event.target)) {
             isMenuOpen = false;
         }
     }
@@ -399,7 +386,7 @@
         href=""
         on:click|preventDefault={toggleMenu}
         class="flex items-center gap-3 px-4 py-3 text-base absolute bottom-4"  style="color:oklch(0.45 0.033 256.848)"
-        >
+        bind:this={loginRef} >
         <span class="relative top-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
             {@html icons.user }
         </span>
@@ -408,7 +395,7 @@
          
 
     <!-- 登录菜单 -->
-    <div class={`login-menu ${isMenuOpen ? 'open' : ''}`} use:menuRef>
+    <div class={`login-menu ${isMenuOpen ? 'open' : ''}`}  >
         <ul>
             <!-- svelte-ignore a11y_invalid_attribute -->
             <a href=""  on:click={() => openModal(1)} >
