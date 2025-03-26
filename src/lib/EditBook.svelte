@@ -122,7 +122,7 @@
     function handlerbookchapters(e): void {
         console.log(e)
         const title = getTag(e.tags, 'title');
-        const filename = getTag(e.tags, 'd');
+        const filename = getTag(e.tags, 'd').split("-")[0];
         console.log(title,filename)
 
         if (filename === "_sidebar.md") {
@@ -160,7 +160,7 @@
 
     function handler_one_chapter(e): void {
         chapterTitle = getTag(e.tags, 'title');
-        mdfilename = getTag(e.tags, 'd');
+        mdfilename = getTag(e.tags, 'd').split("-")[0];
         contentset = e.content;
         eventupdate = e;
     }
@@ -270,8 +270,8 @@
         isLoading = true;
 
         try {
-            const tagd = getTag(eventupdate?.tags || [], "d");
-            const ret = await updatechapter(defaultRelays, content, chapterTitle, mdfilename, bookId, tagd, Keypriv);
+            
+            const ret = await updatechapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
             saved = true;
             dMessage = `成功发布到 ${ret.size} 个服务器。`;
         } catch (error) {

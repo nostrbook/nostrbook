@@ -63,7 +63,7 @@ export async function createchapter(relays,content,title,filename,bookid,Keypriv
     ndkEvent.tags = [
                 ['t','bookchapter'],
                 ['title',title],
-                ['d',filename],
+                ['d',filename + "-" + bookid],
                 ['e',bookid],
                 ];
     await ndkEvent.sign() 
@@ -72,7 +72,7 @@ export async function createchapter(relays,content,title,filename,bookid,Keypriv
 }
 
 
-export async function updatechapter(relays,content,title,filename,bookid,d,Keypriv){
+export async function updatechapter(relays,content,title,filename,bookid,Keypriv){
     const ndk = new NDK({
         explicitRelayUrls: relays,
         devWriteRelayUrls:relays,
@@ -88,7 +88,7 @@ export async function updatechapter(relays,content,title,filename,bookid,d,Keypr
                 ['t','bookchapter'],
                 ['title',title],
                 ['e',bookid],
-                ['d',filename]
+                ['d',filename + "-" + bookid]
                 ];
     await ndkEvent.sign() 
     let response = await ndkEvent.publish(relaySets,2000,0);
@@ -157,7 +157,7 @@ export async function read_chapter_docs ( relays,bookid,filename,handlerevent){
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     console.log("connect..")
-    let filters    = {kinds:[30023],"#e":[bookid],"#d":[filename]}
+    let filters    = {kinds:[30023],"#e":[bookid],"#d":[filename + "-" + bookid ]}
  
     console.log(filters);
 
