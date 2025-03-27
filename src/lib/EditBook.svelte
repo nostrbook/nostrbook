@@ -77,6 +77,7 @@
         isOutline = true;
         chapterTitle = "大纲";
         content = "";
+        contentset="";
         mdfilename = "_sidebar.md";
         
         if (eventOutline) {
@@ -170,6 +171,7 @@
         isOutline = false;
         chapterTitle="";
         contentset="";
+        content="";
         mdfilename="";
         
         if (chapterid==""){
@@ -301,6 +303,7 @@
     $: if (bookId) {
         chapterTitle = "";
         content = "";
+        contentset="";
     }
 
     $: if (chapterTitle) { saved = false; }
