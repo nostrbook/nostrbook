@@ -25,6 +25,17 @@
     js.src = '/node_modules/docsify/lib/docsify.min.js';
     document.body.appendChild(js);
 
+    const styleElements = document.getElementsByTagName('style');
+    let targetStyleElement = null;
+    for (let i = 0; i < styleElements.length; i++) {
+        const element = styleElements[i];
+        const dataViteDevId = element.getAttribute('data-vite-dev-id');
+        if (dataViteDevId && dataViteDevId.includes('app.css')) {            
+            element.parentNode.removeChild(element);
+            break;
+        }
+    }
+ 
 
     window.$docsify = {
       name: title,
