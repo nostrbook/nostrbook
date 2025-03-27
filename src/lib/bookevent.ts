@@ -1,5 +1,6 @@
 import NDK ,{NDKPrivateKeySigner,NDKRelaySet,NDKEvent} from "@nostr-dev-kit/ndk";
 import "websocket-polyfill";
+import {booktag,chaptertag} from "./config"
 
  
 
@@ -18,7 +19,7 @@ export async function createbook(relays,content,Keypriv){
     ndkEvent.kind = 30023;
     ndkEvent.content = JSON.stringify(content);
     ndkEvent.tags = [
-                ['t','createbook'],
+                ['t',booktag],
                 ['title',content['title']],
                 ];
     await ndkEvent.sign()        
@@ -38,7 +39,7 @@ export async function booklist ( relays,handlerevent ,pubkey){
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     
-    let filters    = {kinds:[30023],'#t': ['createbook']}
+    let filters    = {kinds:[30023],'#t': [booktag]}
     if (pubkey) {
         filters.authors = [pubkey];
     }
@@ -61,7 +62,7 @@ export async function createchapter(relays,content,title,filename,bookid,Keypriv
     ndkEvent.kind = 30023;
     ndkEvent.content = content;
     ndkEvent.tags = [
-                ['t','bookchapter'],
+                ['t',chaptertag],
                 ['title',title],
                 ['d',filename + "-" + bookid],
                 ['e',bookid],
@@ -85,7 +86,7 @@ export async function updatechapter(relays,content,title,filename,bookid,Keypriv
     ndkEvent.kind = 30023;
     ndkEvent.content = content;
     ndkEvent.tags = [
-                ['t','bookchapter'],
+                ['t',chaptertag],
                 ['title',title],
                 ['e',bookid],
                 ['d',filename + "-" + bookid]
@@ -107,7 +108,7 @@ export async function read_book_chapters ( relays,bookid ,pubkey,handlerevent){
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     console.log("connect..")
-    let filters    = {kinds:[30023],'#t': ['bookchapter'], "#e":[bookid]}
+    let filters    = {kinds:[30023],'#t': [chaptertag], "#e":[bookid]}
     if (pubkey) {
         filters.authors = [pubkey];
     }
