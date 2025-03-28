@@ -49,6 +49,8 @@
     }
     booklist(defaultRelays,handlerBook);
 
+    setTimeout(()=>{isLoading = false;},5000)
+
     function handleImageError(event) {
         
         event.target.src = '/uploadfiles/?imgsrc='+event.target.src;
@@ -67,12 +69,8 @@
 </script>
 
 <style lang="postcss">
-    /* 自定义渐变色类 */
-    .text-gradient {
-        background: linear-gradient(45deg, #c4b5fd, #c026d3);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+ 
+
 
     .loading-spinner {
         border: 4px solid rgba(0, 0, 0, 0.1);
