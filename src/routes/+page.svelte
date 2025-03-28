@@ -135,7 +135,7 @@
                 }
             }} >
 
-           <img src={book.content.coverurl}   on:error={handleImageError} alt="封面图片预览" class="w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+           <img src="/uploadfiles/?imgsrc={book.content.coverurl}"    alt="封面图片预览" class="w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
             <div class="p-2  bg-gray-100 border border-gray-300" style="border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem; border-top-left-radius: 0; border-top-right-radius: 0;">
                 <h3 class="text-lg font-bold mb-1">{book.content.title}</h3>
                 <div class="flex justify-between items-center text-sm">

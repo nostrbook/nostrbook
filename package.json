@@ -31,11 +31,11 @@
 		"@sveltejs/adapter-node": "^5.2.12",
 		"@tailwindcss/postcss": "^4.0.14",
 		"@tailwindcss/vite": "^4.0.14",
+		"axios": "^1.8.4",
 		"bootstrap": "^5.3.3",
 		"codemirror": "^5.65.19",
 		"cors": "^2.8.5",
 		"marked": "^15.0.7",
-		"node-fetch": "^3.3.2",
 		"nostr-tools": "^2.11.0",
 		"simplemde": "^1.11.2"
 	}
