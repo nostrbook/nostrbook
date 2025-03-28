@@ -31,6 +31,8 @@
         isLoading = false;
         
     }
+
+
  
     function gobooks(bookid,title){
         window.location.href = "/books/" +bookid + "?title="+title;
@@ -46,6 +48,11 @@
         return `${year}-${month}-${day}`;
     }
     booklist(defaultRelays,handlerBook);
+
+    function handleImageError(event) {
+        
+        event.target.src = '/uploadfiles/?imgsrc='+event.target.src;
+    }
 
     onMount(() => {
         
@@ -107,9 +114,14 @@
 
 </style>
 
-<h1 class="text-3xl font-bold mb-4 text-gradient">
-    nostrBOOK 诺友书屋
-</h1>
+    
+<div class="flex justify-center items-center">
+        <img src="/banner.png" alt="banner" class="rounded-md" style="height:100px;">
+
+</div>
+
+       
+
 <hr class="my-4 border-gray-300">
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" >
@@ -125,7 +137,7 @@
                 }
             }} >
 
-           <img src={book.content.coverurl} alt="封面图片预览" class="w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+           <img src={book.content.coverurl}   on:error={handleImageError} alt="封面图片预览" class="w-full aspect-square" style="width: 100%; aspect-ratio: 260 / 300; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
             <div class="p-2  bg-gray-100 border border-gray-300" style="border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem; border-top-left-radius: 0; border-top-right-radius: 0;">
                 <h3 class="text-lg font-bold mb-1">{book.content.title}</h3>
                 <div class="flex justify-between items-center text-sm">

@@ -13,8 +13,9 @@ export const defaultUploaderURLs = [
 ];
 
 export const defaultRelays1 = [
- 
+  'wss://hk.purplerelay.com', 
   'wss://relay.j35tr.com', 
+  'wss://kr.purplerelay.com',
   'wss://relay.damus.io/',
   'wss://relay.primal.net/',
 ];
