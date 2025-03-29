@@ -30,27 +30,7 @@
     user: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`
     };
 
-    // 菜单配置
-    const menuItems = [
-    { 
-        text: '首页', 
-        link: '/', 
-        requiresLogin: false,
-        icon: icons.home // 直接引用图标
-    },
-    { 
-        text: '开启创作', 
-        link: '/createbook', 
-        requiresLogin: true,
-        icon: icons.create
-    },
-    { 
-        text: '关于', 
-        link: '/about', 
-        requiresLogin: false,
-        icon: icons.about
-    }
-    ];
+
 
 
 
@@ -96,6 +76,7 @@
             if (!Keypriv) {
                 event.preventDefault(); // 阻止默认的跳转行为
                 showModal = 4; //show提示登录信息 
+                
             }
         }
     };
@@ -211,6 +192,32 @@
         document.removeEventListener('click', handleClickOutside);
         };
     });
+
+    // 菜单配置
+    const menuItems = [
+    { 
+        text: '首页', 
+        link: '/', 
+        requiresLogin: false,
+        
+        icon: icons.home // 直接引用图标
+    },
+    { 
+        text: '开启创作', 
+        link: '/createbook',
+         
+        requiresLogin: true,
+        icon: icons.create
+    },
+    { 
+        text: '关于', 
+        link: '/about', 
+         
+        requiresLogin: false,
+        icon: icons.about
+    }
+    ];
+
 </script>
 
  <style>
@@ -340,11 +347,15 @@
     <ul class="menu bg-base-200 rounded-box w-full p-2">
     {#each menuItems as item}
         <li>
-
+        <!-- svelte-ignore a11y_invalid_attribute -->
+        
+       
         <a
         data-sveltekit-preload-data="tap"
         href={item.link}
         
+        on:click={(e) => handleMenuItemClick(e, item)}
+       
         class="flex items-center gap-3 px-4 py-3 text-base"  style="color:oklch(0.45 0.033 256.848)"
         >
         <span class="relative top-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
@@ -352,6 +363,7 @@
         </span>
         <span class="relative text-lg leading-none">{item.text}</span> <!-- 调大字体并清除行高影响 -->
         </a>
+
         </li>
     {/each}
     </ul>  
