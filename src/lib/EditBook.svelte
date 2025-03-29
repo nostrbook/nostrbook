@@ -1,12 +1,11 @@
 <script lang="ts">
     import { defaultRelays } from '$lib/config';
     import { booklist, read_book_chapters, createchapter, read_chapter, updatechapter } from '$lib/bookevent';
-    import { getContext } from 'svelte';
-    import { writable, get } from 'svelte/store';
+    import { getContext } from'svelte';
+    import { writable, get } from'svelte/store';
     import { page } from '$app/stores';
-    import { onMount } from 'svelte';  
-    import SimpleMDE from '$lib/simpleMDE.svelte';  
-  
+    import { onMount } from'svelte';
+    import SimpleMDE from '$lib/simpleMDE.svelte';
 
     // 状态管理
     let isLoading = false;
@@ -14,15 +13,15 @@
     export let isWritebookOpen: boolean;
     export let bookId: string;
     export let bookTitle: string;
-    
+
     let content: string = "";
     let simplemde;
     let chapterTitle: string = "";
     let mdfilename: string = "";
     let dMessage: string = "正在加载....";
     let isOutline: boolean = false;
-    let eventOutline ;
-    let eventupdate ;
+    let eventOutline;
+    let eventupdate;
     let newchapter: boolean = false;
 
     const keyprivStore = getContext('keypriv');
@@ -30,37 +29,39 @@
     let Keypriv: string;
     let Keypub: string;
 
-    let tableOfContents=[];
+    let tableOfContents = [];
     let timeTOC = [];
-    let outlineTOC= [];
+    let outlineTOC = [];
+    let draftTOC = [];
     let chapterMenu = "outline";
 
-    function handleSortChange(val){
-           chapterMenu = val;
+    function saveDraft(): void;
 
-           if (val == "time") {
-             tableOfContents = timeTOC;
-           } 
-           if (val == "outline") {
-             tableOfContents = outlineTOC;
-           } 
-           console.log(tableOfContents);
-           
+    function handleSortChange(val) {
+        chapterMenu = val;
+        if (val === "time") {
+            tableOfContents = timeTOC;
+        } else if (val === "outline") {
+            tableOfContents = outlineTOC;
+        } else if (val === "draft") {
+            tableOfContents = draftTOC;
+        }
+        console.log(tableOfContents);
     }
 
     function updateTOC(TOC, newItem) {
-        return outlineTOC.map(item => {
-             
+        return TOC.map(item => {
             if (item.file === newItem.file) {
                 return { ...item, id: newItem.id };
             }
-            return item;  
+            return item;
         });
     }
+
     // 工具函数
     function getTag(tags: string[][], tagName: string): string {
         const tagEntry = tags.find(item => item[0] === tagName);
-        return tagEntry ? tagEntry[1] : "";
+        return tagEntry? tagEntry[1] : "";
     }
 
     // 章节操作
@@ -68,23 +69,20 @@
         isOutline = false;
         mdfilename = "";
         chapterTitle = "";
-        content = ""
-        simplemde.value(content) ;
-        
+        content = "";
+        simplemde.value(content);
         newchapter = true;
     }
 
     function editoutline(): void {
         isOutline = true;
         chapterTitle = "大纲";
-        content = ""
-        simplemde.value(content) ;
-
+        content = "";
+        simplemde.value(content);
         mdfilename = "_sidebar.md";
-        
         if (eventOutline) {
             content = eventOutline.content;
-            simplemde.value(content) ; 
+            simplemde.value(content);
             eventupdate = eventOutline;
             newchapter = false;
         } else {
@@ -96,25 +94,24 @@
         content = `- [首页](/readme.md)
         \n- [第一章、 第一章标题](/chapter1.md)
         \n- [第二章、 第二章标题](/chapter2.md)`;
-        simplemde.value(content) ; 
+        simplemde.value(content);
     }
 
     function setLoading(state: boolean): void {
-        if (state == true) dMessage = "正在加载";
+        if (state) dMessage = "正在加载";
         isLoading = state;
     }
 
     // 关闭书籍编辑器
     const closeWritebook = (ischeck: number): void => {
         if (ischeck === 0) {
-            isWritebookOpen = false; 
+            isWritebookOpen = false;
             window.location.reload();
             return;
         }
-        
         // 检查是否保存
         if (!saved) {
-            if ((chapterTitle !== "" && !isOutline) || content !== "") {
+            if ((chapterTitle!== "" &&!isOutline) || content!== "") {
                 alert("请先保存数据");
                 return;
             }
@@ -125,73 +122,61 @@
 
     // 事件处理
     function handlerbookchapters(e): void {
-        console.log(e)
         const title = getTag(e.tags, 'title');
         const filename = getTag(e.tags, 'd').split("-")[0];
-        console.log(title,filename)
-
         if (filename === "_sidebar.md") {
             eventOutline = e;
             format_sidebar();
-            //更新 outlineTOC id
-            timeTOC.map(item => { outlineTOC = updateTOC(outlineTOC,item)})
+            timeTOC.map(item => {
+                outlineTOC = updateTOC(outlineTOC, item);
+            });
             tableOfContents = outlineTOC;
-            
             return;
         }
-        timeTOC = [{title:title,id:e.id,file:filename},...timeTOC];
-        outlineTOC = updateTOC(outlineTOC,{title:title,id:e.id,file:filename});
-        tableOfContents= updateTOC(tableOfContents,{title:title,id:e.id,file:filename});
-         
+        timeTOC = [{ title: title, id: e.id, file: filename }, ...timeTOC];
+        outlineTOC = updateTOC(outlineTOC, { title: title, id: e.id, file: filename });
+        tableOfContents = updateTOC(tableOfContents, { title: title, id: e.id, file: filename });
     }
 
-    function format_sidebar(){
+    function format_sidebar() {
         let text = eventOutline.content;
-        console.log(text)
-        const regex = /\[([^\]]+)\]\(([^)]+)\)/g; 
+        const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
         let matches;
         let results = [];
-        while ((matches = regex.exec(text)) !== null) {
-            const title = matches[1];    // 方括号内的标题（如 "第一章、 第一章标题"）
-            const mdFile = matches[2];   // 圆括号内的 .md 文件名（不含 /，如 "chapter1"）
-            
-            results.push({ title, file:mdFile.split('/').pop(),id:""});
+        while ((matches = regex.exec(text))!== null) {
+            const title = matches[1];
+            const mdFile = matches[2];
+            results.push({ title, file: mdFile.split('/').pop(), id: "" });
         }
         outlineTOC = results;
-        // default 显示 大纲里内容
-     
-         
     }
 
     function handler_one_chapter(e): void {
         chapterTitle = getTag(e.tags, 'title');
         mdfilename = getTag(e.tags, 'd').split("-")[0];
         content = e.content;
-        simplemde.value(content) ;
+        simplemde.value(content);
         eventupdate = e;
     }
 
     // 编辑操作
-    async function editchapter(chapterid: string,filename:string): Promise<void> {
+    async function editchapter(chapterid: string, filename: string): Promise<void> {
         isOutline = false;
-        chapterTitle="";
-        
-        content="";
-        simplemde.value(content) ;
-        mdfilename="";
-        
-        if (chapterid==""){
-            dMessage  = "没有对应的章节ID";
+        chapterTitle = "";
+        content = "";
+        simplemde.value(content);
+        mdfilename = "";
+        if (chapterid === "") {
+            dMessage = "没有对应的章节ID";
             isLoading = true;
-            setTimeout(()=>{
+            setTimeout(() => {
                 isLoading = false;
-            },3000);
-            return ;
+            }, 3000);
+            return;
         }
-
         setLoading(true);
         try {
-            await read_chapter(defaultRelays, bookId,chapterid, Keypub, handler_one_chapter);
+            await read_chapter(defaultRelays, bookId, chapterid, Keypub, handler_one_chapter);
         } catch (error) {
             console.error('读取章节失败:', error);
             dMessage = "读取章节失败";
@@ -203,7 +188,6 @@
     async function editbook(bookid: string): Promise<void> {
         bookId = bookid;
         isWritebookOpen = true;
-        
         setLoading(true);
         try {
             await read_book_chapters(defaultRelays, bookId, Keypub, handlerbookchapters);
@@ -213,6 +197,7 @@
         } finally {
             setTimeout(() => isLoading = false, 3000);
         }
+        getDraftsByBookId();
     }
 
     // 创建/更新章节
@@ -221,12 +206,10 @@
             alert("标题不能为空");
             return;
         }
-        
         if (content === "") {
             alert("内容不能为空");
             return;
         }
-
         let hasSameFilename = false;
         for (let item of timeTOC) {
             if (item.file === mdfilename) {
@@ -234,20 +217,23 @@
                 break;
             }
         }
-        if (hasSameFilename){
-            alert("有相同的文件名:"+mdfilename+",请更换markdown文件名！");
-            return ;
+        if (hasSameFilename) {
+            alert("有相同的文件名:" + mdfilename + ",请更换markdown文件名！");
+            return;
         }
-
         dMessage = "正在发布";
         isLoading = true;
         content = simplemde.value();
         try {
             const ret = await createchapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
             saved = true;
-            dMessage = `成功发布到 ${ret.size} 个服务器。`;
-            
-            // 如果是新章节，添加到目录
+            if (ret.size === 0) {
+                dMessage = `发布失败，未成功发布到任何服务器,已经保存到草稿。`;
+                saveDraft();
+            } else {
+                dMessage = `成功发布到 ${ret.size} 个服务器。`;
+            }
+
             if (!isOutline) {
                 tableOfContents.push({
                     title: chapterTitle,
@@ -257,7 +243,7 @@
             }
         } catch (error) {
             console.error('上传失败:', error);
-            dMessage = `上传失败: ${error instanceof Error ? error.message : String(error)}`;
+            dMessage = `上传失败: ${error instanceof Error? error.message : String(error)}`;
         } finally {
             setTimeout(() => isLoading = false, 3000);
         }
@@ -268,23 +254,26 @@
             alert("标题不能为空");
             return;
         }
-        
         if (content === "") {
             alert("内容不能为空");
             return;
         }
-
         dMessage = "正在发布";
         isLoading = true;
         content = simplemde.value();
         try {
-            
             const ret = await updatechapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
             saved = true;
-            dMessage = `成功发布到 ${ret.size} 个服务器。`;
+            if (ret.size === 0) {
+                dMessage = `发布失败，未成功发布到任何服务器,已经保存到草稿。`;
+                saveDraft();
+            } else {
+                dMessage = `成功发布到 ${ret.size} 个服务器。`;
+            }
+            
         } catch (error) {
             console.error('上传失败:', error);
-            dMessage = `上传失败: ${error instanceof Error ? error.message : String(error)}`;
+            dMessage = `上传失败: ${error instanceof Error? error.message : String(error)}`;
         } finally {
             setTimeout(() => isLoading = false, 3000);
         }
@@ -299,6 +288,63 @@
         newchapter = false;
     }
 
+    // 保存草稿相关
+    function getDraftKey(mdfilename: string, bookId: string) {
+        return `${mdfilename}-${bookId}`;
+    }
+
+    function saveDraft() {
+        if (chapterTitle === "") {
+            alert("标题不能为空，请输入标题后再保存草稿。");
+            return;
+        }
+        if (mdfilename === "") {
+            alert("Markdown 文件名不能为空，请输入文件名后再保存草稿。");
+            return;
+        }
+        const contentToSave = simplemde.value();
+        if (contentToSave === "") {
+            alert("内容不能为空，请输入内容后再保存草稿。");
+            return;
+        }        
+        const draftKey = getDraftKey(mdfilename, bookId);
+        const draft = {
+            chapterTitle,
+            mdfilename,
+            content: simplemde.value()
+        };
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+        saved = true;
+        alert("草稿已保存");
+        getDraftsByBookId();
+    }
+
+    function loadDraft() {
+        const draftKey = getDraftKey(mdfilename, bookId);
+        const draft = localStorage.getItem(draftKey);
+        if (draft) {
+            const { chapterTitle: draftTitle, mdfilename: draftFilename, content: draftContent } = JSON.parse(draft);
+            chapterTitle = draftTitle;
+            mdfilename = draftFilename;
+            content = draftContent;
+            simplemde.value(content);
+        }
+    }
+
+    function getDraftsByBookId() {
+        draftTOC = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.endsWith(`-${bookId}`)) {
+                const draft = localStorage.getItem(key);
+                if (draft) {
+                    const { chapterTitle: title, mdfilename: file } = JSON.parse(draft);
+                    draftTOC.push({ title, id: null, file });
+                }
+            }
+        }
+    }
+
     // 响应式语句
     $: if (isWritebookOpen) {
         saved = false;
@@ -309,17 +355,17 @@
     $: if (bookId) {
         chapterTitle = "";
         content = "";
-        
     }
 
     $: if (chapterTitle) { saved = false; }
     $: if (content) { saved = false; }
-    $: if (simplemde) {content = simplemde.value();}
+    $: if (simplemde) { content = simplemde.value(); }
 
     // 组件挂载
     onMount(() => {
         Keypriv = get(keyprivStore);
         Keypub = get(keypubStore);
+        getDraftsByBookId();
     });
 </script>
 
@@ -400,7 +446,9 @@
     }
 
     @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     .info-modal {
@@ -456,8 +504,6 @@
         font-size: 0.875rem;
     }
 
-
-
     .button-group {
         display: flex;
         gap: 0.5rem;
@@ -492,10 +538,16 @@
     .button-danger:hover {
         background-color: #e03131;
     }
- 
-    input:focus {
-	    border: 1px solid #d4237a; /*  */
-    }    
+
+    .button-secondary {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+    }
+
+    .button-secondary:hover {
+        background-color: #5a6268;
+    }
 </style>
 
 {#if isWritebookOpen}
@@ -510,19 +562,29 @@
                 </h2>
                 <div class="border-b border-gray-300 my-2"></div>
 
-                <div class="tabs tabs-box">
-                    <input type="radio" name="my_tabs_1" class="tab" aria-label="大纲排列" checked="checked" on:click={() => handleSortChange('outline')}/>
-                    <input type="radio" name="my_tabs_1" class="tab" aria-label="时间排列"  on:click={() => handleSortChange('time')}/>
+                <div class="tabs tabs-box bg-sky-100"  >
+                    <input type="radio" name="my_tabs_1" class="tab" aria-label="大纲" checked="checked"
+                        on:click={() => handleSortChange('outline')} />
+                    <input type="radio" name="my_tabs_1" class="tab" aria-label="时间排列"
+                        on:click={() => handleSortChange('time')} />
+                    <input type="radio" name="my_tabs_1" class="tab" aria-label="草稿"
+                        on:click={() => handleSortChange('draft')} />
                 </div>
-                            
-                 <ul class="chapter-list">
 
+                <ul class="chapter-list">
                     {#each tableOfContents as toc}
                         <li class="chapter-item">
-                               <!-- svelte-ignore a11y_invalid_attribute -->
-                            <a 
-                                href="#" 
-                                on:click|preventDefault={() => editchapter(toc.id,toc.file)} 
+                            <!-- svelte-ignore a11y_invalid_attribute -->
+                            <a
+                                href="#"
+                                on:click|preventDefault={() => {
+                                    if (chapterMenu === 'draft') {
+                                        mdfilename = toc.file;
+                                        loadDraft();
+                                    } else {
+                                        editchapter(toc.id, toc.file);
+                                    }
+                                }}
                                 class="chapter-link"
                             >
                                 {toc.title}
@@ -530,7 +592,7 @@
                         </li>
                     {/each}
                 </ul>
-                
+
                 <div class="flex items-center gap-3 mb-4 absolute bottom-2">
                     <!-- 新增章节按钮 -->
                     <button
@@ -538,7 +600,9 @@
                         on:click={addChapter}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                clip-rule="evenodd" />
                         </svg>
                         新增章节
                     </button>
@@ -548,24 +612,25 @@
                     <a
                         href="#"
                         on:click|preventDefault={editoutline}
-                        class="flex items-center px-4 py-2 text-white bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors" style="color:oklch(0.606 0.25 292.717)"
+                        class="flex items-center px-4 py-2 text-white bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors"
+                        style="color:oklch(0.606 0.25 292.717)"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
-                        {eventOutline ? '更新大纲' : '增加大纲'}
+                        {eventOutline? '更新大纲' : '增加大纲'}
                     </a>
                 </div>
             </div>
-            
+
             <div class="right-editor">
                 {#if isOutline}
                     <div class="flex items-center mb-4">
                         <h3 class="font-medium">编写大纲内容</h3>
-                            <!-- svelte-ignore a11y_invalid_attribute -->
-                        <a 
-                            href="#" 
-                            on:click|preventDefault={outlineexample} 
+                        <!-- svelte-ignore a11y_invalid_attribute -->
+                        <a
+                            href="#"
+                            on:click|preventDefault={outlineexample}
                             class="outline-example-link"
                         >
                             查看样例
@@ -574,46 +639,53 @@
                 {:else}
                     <div class="flex items-center gap-2 mb-4">
                         <label for="title-input" class="font-medium">标题:</label>
-                        <input 
-                            type="text" 
-                            bind:value={chapterTitle} 
-                            id="title-input" 
-                            placeholder="请输入标题" 
+                        <input
+                            type="text"
+                            bind:value={chapterTitle}
+                            id="title-input"
+                            placeholder="请输入标题"
                             class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         >
                     </div>
                 {/if}
-                
+
                 <div class="editor-content">
                     <SimpleMDE bind:simplemde={simplemde} />
                 </div>
-                
+
                 <div class="mb-4">
                     <label for="mdfile-input" class="block text-sm font-medium mb-1">
                         Markdown文件名:
                     </label>
-                    <input 
-                        type="text" 
-                        bind:value={mdfilename} 
-                        id="mdfile-input" 
-                        placeholder="制作大纲需要md文件名:readme.md" 
+                    <input
+                        type="text"
+                        bind:value={mdfilename}
+                        id="mdfile-input"
+                        placeholder="制作大纲需要md文件名:readme.md"
                         class="rounded-md mt-1 block w-4/5 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                 </div>
 
                 <div class="button-group">
-                    <button 
-                        class="button button-danger" 
+                    <button
+                        class="button button-danger"
                         on:click={() => closeWritebook(0)}
                     >
                         不保存退出
                     </button>
-                    <button 
-                        class="button button-primary" 
+                    <button
+                        class="button button-secondary"
+                        on:click={saveDraft}
+                        disabled={isLoading}
+                    >
+                        保存草稿
+                    </button>
+                    <button
+                        class="button button-primary"
                         on:click={submitChapter}
                         disabled={isLoading}
                     >
-                        {isLoading ? '处理中...' : '提交'}
+                        {isLoading? '处理中...' : '提交'}
                     </button>
                 </div>
             </div>
