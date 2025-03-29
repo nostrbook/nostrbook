@@ -10,11 +10,11 @@
     let Keypriv;
     let Keypub;
 
-    let simplemde;
-    export let content;
-    export let contentset;
+    export let simplemde;
+    let content;
     
-    let oldcontentset=contentset;
+    
+ 
 
     let textareaRef;
     let isupload = false;
@@ -113,16 +113,7 @@
                 ]
             });
 
-            // 设置初始内容（仅在初始化时调用）
-            if (content) {
-                simplemde.value(content);
-            }
-
-            // 监听编辑器内容变化并更新 content
-            simplemde.codemirror.on('change', () => {
-                content = simplemde.value();
-            });
-
+ 
             const style = document.createElement('style');
             style.textContent = `.CodeMirror { height: 85%; }`;
             document.head.appendChild(style);
@@ -132,13 +123,7 @@
         }
     });
 
-    $: if (simplemde){
-
-        if (contentset != oldcontentset){
-            simplemde.value(contentset);
-            oldcontentset = contentset;
-        }
-    }
+ 
 </script>
 
 <style>
@@ -167,7 +152,7 @@
 
 </style>
 
-<textarea id="textareacontent" bind:value={content} bind:this={textareaRef}></textarea>
+<textarea id="textareacontent" bind:this={textareaRef}></textarea>
 
 {#if isupload}
     <div class="info-modal">

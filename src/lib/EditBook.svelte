@@ -16,7 +16,7 @@
     export let bookTitle: string;
     
     let content: string = "";
-    let contentset: string = "";
+    let simplemde;
     let chapterTitle: string = "";
     let mdfilename: string = "";
     let dMessage: string = "正在加载....";
@@ -68,20 +68,23 @@
         isOutline = false;
         mdfilename = "";
         chapterTitle = "";
-        content = "";
-        contentset = "";
+        content = ""
+        simplemde.value(content) ;
+        
         newchapter = true;
     }
 
     function editoutline(): void {
         isOutline = true;
         chapterTitle = "大纲";
-        content = "";
-        contentset="";
+        content = ""
+        simplemde.value(content) ;
+
         mdfilename = "_sidebar.md";
         
         if (eventOutline) {
-            contentset = eventOutline.content;
+            content = eventOutline.content;
+            simplemde.value(content) ; 
             eventupdate = eventOutline;
             newchapter = false;
         } else {
@@ -90,9 +93,10 @@
     }
 
     function outlineexample(): void {
-        contentset = `- [首页](/readme.md)
+        content = `- [首页](/readme.md)
         \n- [第一章、 第一章标题](/chapter1.md)
         \n- [第二章、 第二章标题](/chapter2.md)`;
+        simplemde.value(content) ; 
     }
 
     function setLoading(state: boolean): void {
@@ -162,7 +166,8 @@
     function handler_one_chapter(e): void {
         chapterTitle = getTag(e.tags, 'title');
         mdfilename = getTag(e.tags, 'd').split("-")[0];
-        contentset = e.content;
+        content = e.content;
+        simplemde.value(content) ;
         eventupdate = e;
     }
 
@@ -170,8 +175,9 @@
     async function editchapter(chapterid: string,filename:string): Promise<void> {
         isOutline = false;
         chapterTitle="";
-        contentset="";
+        
         content="";
+        simplemde.value(content) ;
         mdfilename="";
         
         if (chapterid==""){
@@ -235,7 +241,7 @@
 
         dMessage = "正在发布";
         isLoading = true;
-
+        content = simplemde.value();
         try {
             const ret = await createchapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
             saved = true;
@@ -270,7 +276,7 @@
 
         dMessage = "正在发布";
         isLoading = true;
-
+        content = simplemde.value();
         try {
             
             const ret = await updatechapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
@@ -303,11 +309,12 @@
     $: if (bookId) {
         chapterTitle = "";
         content = "";
-        contentset="";
+        
     }
 
     $: if (chapterTitle) { saved = false; }
     $: if (content) { saved = false; }
+    $: if (simplemde) {content = simplemde.value();}
 
     // 组件挂载
     onMount(() => {
@@ -578,7 +585,7 @@
                 {/if}
                 
                 <div class="editor-content">
-                    <SimpleMDE bind:content={content} bind:contentset={contentset}/>
+                    <SimpleMDE bind:simplemde={simplemde} />
                 </div>
                 
                 <div class="mb-4">
