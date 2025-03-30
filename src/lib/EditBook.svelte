@@ -211,6 +211,11 @@
             alert("内容不能为空");
             return;
         }
+        if (mdfilename == ""){
+            alert("markdown 文件名不能为空");
+            return;
+        }
+
         let hasSameFilename = false;
         for (let item of timeTOC) {
             if (item.file === mdfilename) {
@@ -260,6 +265,12 @@
             alert("内容不能为空");
             return;
         }
+        
+        if (mdfilename == ""){
+            alert("markdown 文件名不能为空");
+            return;
+        }
+
         dMessage = "正在发布";
         isLoading = true;
        
