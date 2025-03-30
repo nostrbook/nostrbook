@@ -206,6 +206,7 @@
             alert("标题不能为空");
             return;
         }
+        content = simplemde.value();
         if (content === "") {
             alert("内容不能为空");
             return;
@@ -223,7 +224,7 @@
         }
         dMessage = "正在发布";
         isLoading = true;
-        content = simplemde.value();
+        
         try {
             const ret = await createchapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
             saved = true;
@@ -254,13 +255,14 @@
             alert("标题不能为空");
             return;
         }
+        content = simplemde.value();
         if (content === "") {
             alert("内容不能为空");
             return;
         }
         dMessage = "正在发布";
         isLoading = true;
-        content = simplemde.value();
+       
         try {
             const ret = await updatechapter(defaultRelays, content, chapterTitle, mdfilename, bookId, Keypriv);
             saved = true;
