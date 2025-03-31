@@ -131,7 +131,7 @@
     <p class="text-gray-700">您还没有开始写书哦，点击右上角的“开启创作”按钮来开始创作之旅吧！</p>
 {/if}
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     {#each books as book}
         <div
             class="mb-4 clickable"
