@@ -41,6 +41,7 @@
       name: title,
       loadSidebar: true,
       homepage: "readme.md",
+      subMaxLevel:2,
       alias: {
           '/_sidebar.md': './_sidebar.md',
       }
