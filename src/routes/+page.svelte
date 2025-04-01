@@ -1,3 +1,5 @@
+
+
 <script lang="ts">
    
     import { onMount } from 'svelte'; 
@@ -12,9 +14,12 @@
     let Keypriv;
     let Keypub;
 
+    export let data; // 自动注入 load 返回的数据
+    
+
     let bookstemp = [];
-    let books = [];
-    let isLoading = true;
+    let books = data;
+    let isLoading = false;
     function handlerBook(e){
         
         let book = {};
