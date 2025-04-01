@@ -18,7 +18,7 @@
     
 
     let bookstemp = [];
-    let books = data;
+    let books = data.books;
     let isLoading = false;
     function handlerBook(e){
         
@@ -53,7 +53,7 @@
         return `${year}-${month}-${day}`;
     }
     booklist(defaultRelays,handlerBook);
-
+     
     setTimeout(()=>{isLoading = false;},5000)
 
     function handleImageError(event) {
@@ -129,6 +129,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" >
 
+ 
     {#each books as book}
         <div class="mb-4  clickable "        
             on:click={() => gobooks(book.id,book.content.title)}
