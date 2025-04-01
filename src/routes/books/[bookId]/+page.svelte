@@ -51,5 +51,9 @@
   });
 
   </script>
-
+ <style>
+  :global(body::before)  {
+   background: none !important;
+  }
+ </style>
   <div id="app">Loading Docsify...</div>
