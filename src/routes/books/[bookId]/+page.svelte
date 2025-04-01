@@ -13,16 +13,16 @@
     }
 
 
-  onMount(() => {
+  onMount(async () => {
     // 动态加载 CSS
     const css = document.createElement('link');
     css.rel = 'stylesheet';
-    css.href = '/node_modules/docsify/lib/themes/vue.css';
+    css.href = '/static/css/vue.css';
     document.head.appendChild(css);
 
     // 动态加载 JS
     const js = document.createElement('script');
-    js.src = '/node_modules/docsify/lib/docsify.min.js';
+    js.src = '/static/js/docsify.min.js';
     document.body.appendChild(js);
 
     const styleElements = document.getElementsByTagName('style');
