@@ -119,7 +119,7 @@
 
     
 <div class="flex justify-center items-center">
-        <img src="/banner.png" alt="banner" class="rounded-md" style="height:100px;">
+        <img src="/banner32x9.png" alt="banner" class="rounded-md" style="height:100px;">
 
 </div>
 
