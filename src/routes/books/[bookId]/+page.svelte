@@ -57,5 +57,5 @@
   }
  </style>
   <div id="app">Loading Docsify...
-    <a href="#/_sidebar.md?format=html">书本大纲内容</a>
+    <a href="./_sidebar.md?format=html">书本大纲内容</a>
   </div>

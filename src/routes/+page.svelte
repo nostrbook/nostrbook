@@ -131,6 +131,7 @@
 
  
     {#each books as book}
+    <a href="/books/{book.id}" style="color: inherit; text-decoration: none;">
         <div class="mb-4  clickable "        
             on:click={() => gobooks(book.id,book.content.title)}
             role="button"
@@ -150,6 +151,7 @@
                 </div>
             </div>
         </div>
+        </a>
     {/each}
 </div>
 
