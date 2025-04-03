@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
       const content = await Promise.race([contentPromise, timeoutPromise]);
 
       if (format === 'html') {
-        const processedContent = content.replace(/\]\(\//g, '](#/');
+        const processedContent = content.replace(/\]\(\//g, '](./');
         const htmlContent = marked(processedContent);
          
         return new Response(htmlContent, {
