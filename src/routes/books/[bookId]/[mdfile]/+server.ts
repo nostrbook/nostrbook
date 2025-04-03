@@ -1,11 +1,14 @@
 import type { RequestHandler } from './$types';
 import { defaultRelays } from '$lib/config';
 import { booklist, read_book_chapters,  read_chapter, read_chapter_docs } from '$lib/bookevent';
+import {marked} from 'marked';
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, url }) => {
     console.log(params);
     let bookId = params.bookId;
     let mdfile = params.mdfile;
+    const format = url.searchParams.get('format');
+    
 
     if (mdfile == "_404.md") {
        return new Response('Not Found', {
@@ -28,11 +31,24 @@ export const GET: RequestHandler = async ({ params }) => {
   
   try {
       const content = await Promise.race([contentPromise, timeoutPromise]);
-      return new Response(content, {
-          headers: {
-              'Content-Type': 'text/plain; charset=utf-8'
-          }
-      });
+
+      if (format === 'html') {
+        const processedContent = content.replace(/\]\(\//g, '](#/');
+        const htmlContent = marked(processedContent);
+         
+        return new Response(htmlContent, {
+            headers: {
+                'Content-Type': 'text/html; charset=utf-8'
+            }
+        });
+      } else {
+        return new Response(content, {
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8'
+            }
+        });
+      }
+
   } catch (error) {
       if (error.message === '404') {
           return new Response('Not Found', {

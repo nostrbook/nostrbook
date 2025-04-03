@@ -56,4 +56,6 @@
    background: none !important;
   }
  </style>
-  <div id="app">Loading Docsify...</div>
+  <div id="app">Loading Docsify...
+    <a href="#/_sidebar.md?format=html">书本大纲内容</a>
+  </div>
