@@ -167,3 +167,79 @@ export async function read_chapter_docs ( relays,bookid,filename,handlerevent){
     sub.on("event" ,handlerevent)
 
 }
+
+export async function like_chapter(relays,bookid,mdfile,Keypriv){
+
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+            reject(new Error('timeout'));
+        }, 10000); // 10 秒超时
+    });
+    
+    const contentPromise = new Promise<string>((resolve) => {
+        read_chapter_docs(relays, bookid, mdfile, (e) => resolve(e));
+    });
+    
+    try {
+        const e = await Promise.race([contentPromise, timeoutPromise]);
+
+        const ndk = new NDK({
+            explicitRelayUrls: relays,
+            devWriteRelayUrls:relays,
+            signer:new NDKPrivateKeySigner(Keypriv)
+        });
+        let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+        await ndk.connect();
+    
+        const ndkEvent = new NDKEvent(ndk);
+        ndkEvent.kind = 7;
+        ndkEvent.content = "+";
+        ndkEvent.tags = [
+                    ['e',e.id],
+                    ['p',e.pubkey],
+                    ];
+        await ndkEvent.sign() 
+        let response = await ndkEvent.publish(relaySets,2000,0);
+        return response;
+    } catch (error) {
+        return null;
+    }
+}
+
+export async function comment_chapter(relays,bookid,mdfile,content,Keypriv){
+
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+            reject(new Error('timeout'));
+        }, 10000); // 10 秒超时
+    });
+    
+    const contentPromise = new Promise<string>((resolve) => {
+        read_chapter_docs(relays, bookid, mdfile, (e) => resolve(e));
+    });
+    
+    try {
+        const e = await Promise.race([contentPromise, timeoutPromise]);
+
+        const ndk = new NDK({
+            explicitRelayUrls: relays,
+            devWriteRelayUrls:relays,
+            signer:new NDKPrivateKeySigner(Keypriv)
+        });
+        let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+        await ndk.connect();
+    
+        const ndkEvent = new NDKEvent(ndk);
+        ndkEvent.kind = 1;
+        ndkEvent.content = content;
+        ndkEvent.tags = [
+                    ['e',e.id],
+                    ['p',e.pubkey],
+                    ];
+        await ndkEvent.sign() 
+        let response = await ndkEvent.publish(relaySets,2000,0);
+        return response;            
+    } catch (error) {
+        return null;
+    }
+}
