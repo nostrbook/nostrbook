@@ -387,10 +387,13 @@
               </li> 
             </a>
              
+
             {#if npubValue === ''} 
               <!-- svelte-ignore a11y_invalid_attribute -->
               <a href=""  on:click={() => openModal(2)} ><li>Register</li></a>
             {:else}
+              <!-- svelte-ignore a11y_invalid_attribute -->
+              <a href=""  on:click={() => openModal(5)} ><li>我的密钥</li></a>
               <!-- svelte-ignore a11y_invalid_attribute -->
               <a href=""  on:click={handleLinkClick} ><li>我的书籍</li></a>
               <!-- svelte-ignore a11y_invalid_attribute -->
@@ -485,6 +488,25 @@
     <div class="flex justify-center space-y-10">
         <div class="self-start w-full md:w-3/4 lg:w-1/2">
             <p class="mt-10">请先登录</p>
+        </div>
+    </div>
+ 
+</Modal>
+
+
+<Modal isOpen={showModal==5} onClose={() => closeModal(5)}  onOK={() => closeModal(5)}>
+    <svelte:fragment slot="title">
+        <h2 class="text-2xl font-bold">提示！</h2>
+    </svelte:fragment>
+    <div class="flex justify-center space-y-10">
+        <div class="self-start w-full md:w-3/4 lg:w-1/2">
+            <p class="mt-10">请保存好你的密钥: </p>
+             <input 
+                type="text" 
+                placeholder="" 
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                style="user-select: auto;"
+             bind:value={nsecValue} /> 
         </div>
     </div>
  
