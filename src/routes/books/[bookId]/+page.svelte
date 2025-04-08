@@ -3,6 +3,9 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import {icons} from '$lib/icons'
+  import {  slide } from 'svelte/transition';
+  import { defaultRelays } from '$lib/config';
+  import {  read_chapter_docs } from '$lib/bookevent';
   
   let bookid = 0;
   let title;
@@ -10,12 +13,32 @@
   let commentcount=0;
   let targetid;
   let targetpubkey;
+  let openComment=false;
+  let eventid; //chapter id;
 
     $: if (page){
         let pathname = $page.url.pathname;
         title = $page.url.searchParams.get('title')||"nostrBOOK";
         bookid = pathname.split("/books/")[1]
     }
+
+  function getBookIdAndFileName() {
+    const url = new URL(window.location.href);
+    
+    // 1. 提取 bookId（路径最后一部分）
+    const pathParts = url.pathname.split("/");
+    const bookId = pathParts[pathParts.length - 1]; // "f499c2fa0a987e5d1ff901a31cf701ea428d3da2edc6fdb78b81d9f0c1bb1c75"
+
+    // 2. 提取 fileName（处理默认值）
+    let fileName = "readme"; // 默认值
+    if (url.hash.includes("#/")) {
+      // 提取 #/ 后的内容，并去掉 ? 后面的参数
+      fileName = url.hash.split("?")[0].substring(2) || "readme";
+    }
+    fileName = fileName + ".md";
+
+    return { bookId, fileName };
+  }
 
 
   onMount(async () => {
@@ -41,6 +64,7 @@
         }
     }
  
+ 
 
     window.$docsify = {
       name: title,
@@ -52,6 +76,11 @@
       }
     };
 
+    const { bookId, fileName } = getBookIdAndFileName();
+    function handleChapterEvent(e){
+      eventid = e.id;
+    }
+    read_chapter_docs(defaultRelays,bookId,fileName,handleChapterEvent);
 
   });
 
@@ -59,23 +88,7 @@
     window.location.href = `${href}`;
   }
 
-  function getBookIdAndFileName() {
-    const url = new URL(window.location.href);
-    
-    // 1. 提取 bookId（路径最后一部分）
-    const pathParts = url.pathname.split("/");
-    const bookId = pathParts[pathParts.length - 1]; // "f499c2fa0a987e5d1ff901a31cf701ea428d3da2edc6fdb78b81d9f0c1bb1c75"
 
-    // 2. 提取 fileName（处理默认值）
-    let fileName = "readme"; // 默认值
-    if (url.hash.includes("#/")) {
-      // 提取 #/ 后的内容，并去掉 ? 后面的参数
-      fileName = url.hash.split("?")[0].substring(2) || "readme";
-    }
-    fileName = fileName + ".md";
-
-    return { bookId, fileName };
-  }
 
   function handleLike(event) {
     if (event) event.preventDefault(); // 阻止默认行为（如需要）
@@ -88,8 +101,13 @@
     if (event) event.preventDefault(); // 阻止默认行为（如需要）
     // 获取 bookId 和 fileName
  
+    openComment = true;
+
     const { bookId, fileName } = getBookIdAndFileName();
     console.log(`点赞 bookId: ${bookId}, fileName: ${fileName}`);
+  }
+  function closeComment(){
+    openComment = false;
   }
 
   function getLikeAndComment(){
@@ -121,6 +139,41 @@
     height: 24px;       /* 图标高度 */
     stroke: currentColor; /* 让 SVG 使用父元素的文字颜色 */
   }
+
+        #comment-iframe {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 20%;
+            height: 100%;
+            border-left: 1px solid #e2e8f0;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+            background-color:#eee;
+            z-index: 999;
+            right: 0;
+            
+        }
+
+        #close-iframe-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        #close-iframe-button:hover {
+            color: #374151;
+        }
+
+        #comment-iframe iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
  </style>
  
@@ -159,5 +212,14 @@
   </nav>
 
   <div id="app">Loading Docsify...
-    <a href="./_sidebar.md?format=html">书本大纲内容</a>
+    <a href="/books/{bookid}/_sidebar.md?format=html">书本大纲内容</a>
+
   </div>
+  {#if openComment}
+    <div id="comment-iframe" transition:slide>
+        <button id="close-iframe-button" on:click|preventDefault={closeComment}>
+            ×
+        </button>
+        <iframe src="https://example.com/comments" title="comment"></iframe>
+    </div>
+  {/if}
