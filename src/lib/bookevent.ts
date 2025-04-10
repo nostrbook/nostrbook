@@ -3,14 +3,25 @@ import "websocket-polyfill";
 import {booktag,chaptertag} from "./config"
 
  
+// 公共函数：初始化 NDK 实例
+function initNDK(relays, Keypriv) {
+    const ndkConfig = {
+        explicitRelayUrls: relays,
+        devWriteRelayUrls: relays
+    };
+
+    if (Keypriv) {
+        ndkConfig.signer = new NDKPrivateKeySigner(Keypriv);
+    }
+
+    const ndk = new NDK(ndkConfig);
+    return ndk;
+}
 
 export async function createbook(relays,content,Keypriv){
 
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-        signer:new NDKPrivateKeySigner(Keypriv)
-    });
+    const ndk =  initNDK(relays,Keypriv);
+
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
 
@@ -31,11 +42,7 @@ export async function createbook(relays,content,Keypriv){
 
 export async function booklist ( relays,handlerevent ,pubkey){
 
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-         
-    });
+    const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     
@@ -47,14 +54,18 @@ export async function booklist ( relays,handlerevent ,pubkey){
     let sub = ndk.subscribe(filters,{},relaySets,true)
 
     sub.on("event" ,handlerevent)
+
+
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 20000); // 20 秒后关闭订阅
 }
 
 export async function createchapter(relays,content,title,filename,bookid,Keypriv){
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-        signer:new NDKPrivateKeySigner(Keypriv)
-    });
+
+    const ndk =  initNDK(relays,Keypriv);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
 
@@ -68,17 +79,15 @@ export async function createchapter(relays,content,title,filename,bookid,Keypriv
                 ['e',bookid],
                 ];
     await ndkEvent.sign() 
+
     let response = await ndkEvent.publish(relaySets,2000,0);
     return response;
 }
 
 
 export async function updatechapter(relays,content,title,filename,bookid,Keypriv){
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-        signer:new NDKPrivateKeySigner(Keypriv)
-    });
+
+    const ndk =  initNDK(relays,Keypriv);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
 
@@ -100,11 +109,7 @@ export async function updatechapter(relays,content,title,filename,bookid,Keypriv
 
 export async function read_book_chapters ( relays,bookid ,pubkey,handlerevent){
 
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-         
-    });
+    const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     console.log("connect..")
@@ -118,16 +123,19 @@ export async function read_book_chapters ( relays,bookid ,pubkey,handlerevent){
 
     sub.on("event" ,handlerevent)
 
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 10000); // 10 秒后关闭订阅
+
 }
 
 
 export async function read_chapter ( relays,bookid,chapterid ,pubkey,handlerevent){
 
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-         
-    });
+    const ndk =  initNDK(relays );
+
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     console.log("connect..")
@@ -146,15 +154,17 @@ export async function read_chapter ( relays,bookid,chapterid ,pubkey,handlereven
 
     sub.on("event" ,handlerevent)
 
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 10000); // 10 秒后关闭订阅
+
 }
 
 export async function read_chapter_docs ( relays,bookid,filename,handlerevent){
 
-    const ndk = new NDK({
-        explicitRelayUrls: relays,
-        devWriteRelayUrls:relays,
-         
-    });
+    const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
     await ndk.connect();
     console.log("connect..")
@@ -166,80 +176,115 @@ export async function read_chapter_docs ( relays,bookid,filename,handlerevent){
 
     sub.on("event" ,handlerevent)
 
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 10000); // 10 秒后关闭订阅
 }
 
-export async function like_chapter(relays,bookid,mdfile,Keypriv){
-
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-            reject(new Error('timeout'));
-        }, 10000); // 10 秒超时
-    });
-    
-    const contentPromise = new Promise<string>((resolve) => {
-        read_chapter_docs(relays, bookid, mdfile, (e) => resolve(e));
-    });
-    
-    try {
-        const e = await Promise.race([contentPromise, timeoutPromise]);
-
-        const ndk = new NDK({
-            explicitRelayUrls: relays,
-            devWriteRelayUrls:relays,
-            signer:new NDKPrivateKeySigner(Keypriv)
-        });
-        let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+export async function like_chapter(relays, bookid, mdfile, isVote,Keypriv) {
+    console.log("like_chapter",bookid,mdfile ,isVote); 
+    //如果已经点赞就删除点赞
+    if (isVote && isVote.id){
+         
+        const ndk = initNDK(relays, Keypriv);
+        const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
         await ndk.connect();
     
         const ndkEvent = new NDKEvent(ndk);
-        ndkEvent.kind = 7;
-        ndkEvent.content = "+";
+        ndkEvent.kind = 5;
+        ndkEvent.content = "This reaction will be deleted!";
         ndkEvent.tags = [
-                    ['e',e.id],
-                    ['p',e.pubkey],
-                    ];
-        await ndkEvent.sign() 
-        let response = await ndkEvent.publish(relaySets,2000,0);
+            ['e', isVote.id],
+        ];
+       
+        await ndkEvent.sign();
+       
+        ndkEvent.publish(relaySets, 2000, 0);
+
+        return null;
+    }
+
+    // 点赞
+ 
+    const ndk = initNDK(relays, Keypriv);
+    const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+
+    const ndkEvent = new NDKEvent(ndk);
+    ndkEvent.kind = 7;
+    ndkEvent.content = "+";
+    ndkEvent.tags = [
+        ['t', mdfile+'-'+bookid],
+ 
+    ];
+   
+    await ndkEvent.sign();
+   
+    ndkEvent.publish(relaySets, 2000, 0);
+
+    return ndkEvent;
+
+}
+
+// 评论章节
+export async function comment_chapter(relays, bookid, mdfile, content , Keypriv) {
+ 
+    const ndk = initNDK(relays, Keypriv);
+    const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+
+    const ndkEvent = new NDKEvent(ndk);
+    ndkEvent.kind = 1;
+    ndkEvent.content = content;
+    ndkEvent.tags = [
+        ['t', mdfile+'-'+bookid],
+    ];
+    try {
+        await ndkEvent.sign();
+        const response = await ndkEvent.publish(relaySets, 2000, 0);
         return response;
     } catch (error) {
         return null;
     }
 }
 
-export async function comment_chapter(relays,bookid,mdfile,content,Keypriv){
+// 获取章节评论
+export async function get_comments_chapter(relays, bookid, mdfile,   handlerevent) {
 
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-            reject(new Error('timeout'));
-        }, 10000); // 10 秒超时
-    });
-    
-    const contentPromise = new Promise<string>((resolve) => {
-        read_chapter_docs(relays, bookid, mdfile, (e) => resolve(e));
-    });
-    
-    try {
-        const e = await Promise.race([contentPromise, timeoutPromise]);
 
-        const ndk = new NDK({
-            explicitRelayUrls: relays,
-            devWriteRelayUrls:relays,
-            signer:new NDKPrivateKeySigner(Keypriv)
-        });
-        let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-        await ndk.connect();
-    
-        const ndkEvent = new NDKEvent(ndk);
-        ndkEvent.kind = 1;
-        ndkEvent.content = content;
-        ndkEvent.tags = [
-                    ['e',e.id],
-                    ['p',e.pubkey],
-                    ];
-        await ndkEvent.sign() 
-        let response = await ndkEvent.publish(relaySets,2000,0);
-        return response;            
-    } catch (error) {
-        return null;
-    }
+    const ndk = initNDK(relays);
+    const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+
+    const filters = [
+        {
+            kinds: [7],
+            "#t": [mdfile+'-'+bookid]
+        },
+        {
+            kinds: [1],
+            "#q": [mdfile+'-'+bookid]
+        },
+        {
+            kinds: [1],
+            "#t": [mdfile+'-'+bookid]
+        }
+    ];
+
+    const sub  = ndk.subscribe(filters,{},relaySets,true);
+
+    // 处理接收到的事件
+    sub.on('event', async (event) => {
+
+        await handlerevent(event);
+    });
+
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 20000); // 20 秒后关闭订阅
 }
+    
