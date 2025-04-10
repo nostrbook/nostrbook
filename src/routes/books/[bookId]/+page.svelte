@@ -290,33 +290,66 @@
     }
 
     /* 单个评论项样式 */
+     /* 评论项容器 */
     .comment-item {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
+    .comment-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 作者信息 */
     .comment-author {
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #343a40;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2d3748;
+        font-size: 0.95rem;
     }
 
+    /* 作者头像样式（可以替换为实际头像） */
+    .comment-author::before {
+        content: "";
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #4299e1;
+        background-image: linear-gradient(135deg, #4299e1, #3182ce);
+    }
+
+    /* 评论内容 */
     .comment-content {
-        margin-bottom: 5px;
-        color: #495057;
+        margin-bottom: 12px;
+        color: #4a5568;
+        line-height: 1.5;
+        padding-left: 32px; /* 与头像对齐 */
+        white-space: pre-wrap; /* 保留换行和空格 */
     }
 
+    /* 时间显示 */
     .comment-time {
-        font-size: 0.8rem;
-        color: #6c757d;
+        display: block;
+        font-size: 0.75rem;
+        color: #718096;
+        text-align: right;
+        padding-left: 32px; /* 与头像对齐 */
     }
 
-    /* 输入区域 */
-    .comment-input-area {
-        margin-top: auto; 
-        padding-top: 15px;
-        border-top: 1px solid #e9ecef;
+    /* 评论列表容器 */
+    #comments-display {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     /* 文本输入框 */
@@ -421,9 +454,13 @@
                 
                 {#each comments as comment}
                 <div class="comment-item">
-                    <span class="comment-author">作者: {comment.pubkey.slice(0, 8)}...</span>
+                    <span class="comment-author">
+                        作者: {comment.pubkey.slice(0, 8)}...{comment.pubkey.slice(-4)}
+                    </span>
                     <p class="comment-content">{comment.content}</p>
-                    <span class="comment-time">时间: {new Date(comment.created_at * 1000).toLocaleString()}</span>
+                    <span class="comment-time">
+                        {new Date(comment.created_at * 1000).toLocaleString()}
+                    </span>
                 </div>
                 {/each}
                  
