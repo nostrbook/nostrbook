@@ -18,7 +18,7 @@ function initNDK(relays, Keypriv) {
     return ndk;
 }
 
-export async function createbook(relays,content,Keypriv){
+export async function createbook(relays,content,tags,Keypriv){
 
     const ndk =  initNDK(relays,Keypriv);
 
@@ -29,16 +29,39 @@ export async function createbook(relays,content,Keypriv){
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 30023;
     ndkEvent.content = JSON.stringify(content);
+    
     ndkEvent.tags = [
                 ['t',booktag],
                 ['title',content['title']],
                 ];
+
+    if (tags) ndkEvent.tags = tags;        
+        
     await ndkEvent.sign()        
     let ret = await ndkEvent.publish(relaySets);
     console.log(ret);
     return ret;
 }
 
+export async function getbook(relays,bookid,handlerevent){
+    const ndk =  initNDK(relays);
+
+    let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+    let filters    = {kinds:[30023],'ids': [bookid]}
+
+    let sub = ndk.subscribe(filters,{},relaySets,true)
+
+    sub.on("event" ,handlerevent)
+
+
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 20000); // 20 秒后关闭订阅
+
+}
 
 export async function booklist ( relays,handlerevent ,pubkey){
 

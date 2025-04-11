@@ -24,13 +24,18 @@
         
         let book = {};
         book.id = e.id
+        //修正书籍的 老id
+        const foundTag = e.tags.find((tag) => tag[0] === "e");
+        if (foundTag) {
+            book.id = foundTag[1];
+        }
         book.content = JSON.parse(e.content)
         book.tags = e.tags
         book.created_at = e.created_at
         book.pubkey = e.pubkey
-        if (e.created_at >= 1742537924){
-            bookstemp.push(book) 
-        }
+         
+        bookstemp.push(book) 
+         
         // 渲染事件必须监听到books变化才会做网页渲染push 不会重新改变 books
         books = bookstemp;
         isLoading = false;

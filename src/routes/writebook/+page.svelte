@@ -29,9 +29,16 @@
             created_at: e.created_at,
             pubkey: e.pubkey
         };
-        if (e.created_at >= 1742537924) {
-            books = [...books, book]; // 使用展开运算符更新数组
+        book.newid = book.id;
+        //修正书籍的 老id
+        const foundTag = e.tags.find((tag) => tag[0] === "e");
+        if (foundTag) {
+            book.id = foundTag[1];
         }
+
+         
+        books = [...books, book]; // 使用展开运算符更新数组
+        
         isLoading = false;
     }
 
@@ -50,8 +57,9 @@
 
 
 
-    function navigateToCreateBook() {
-        window.location.href = '/createbook';
+    function navigateToCreateBook(href) {
+
+        window.location.href = href;
     }
 
 
@@ -74,6 +82,19 @@
     function handleImageError(event) {
         
         event.target.src = '/uploadfiles/?imgsrc='+event.target.src;
+    }
+
+
+
+    let hoveredBookId = null;
+
+    function handleMouseEnter(bookId) {
+        hoveredBookId = bookId;
+        console.log(hoveredBookId)
+    }
+
+    function handleMouseLeave() {
+        hoveredBookId = null;
     }
 
 </script>
@@ -118,11 +139,55 @@
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         transform: scale(1.05);
     }
+
+   .book-card {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+  .button-container {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        flex-direction: column; /* 竖排显示按钮 */
+        gap: 0.2rem; /* 缩小按钮之间的间距 */
+        background-color: #f9fafb; /* 淡化背景颜色 */
+        padding: 0.3rem;
+        border-radius: 0.25rem;
+        width: 60%;
+        max-width: 200px;
+        box-shadow: 0 15px 20px -3px rgba(0, 0, 0, 0.2), 0 6px 8px -2px rgba(0, 0, 0, 0.1);
+
+    }
+
+    /* 鼠标悬停时显示按钮容器 */
+   .book-card:hover .button-container {
+        display: flex;
+    }
+
+    /* 按钮样式 */
+   .action-button {
+        background-color: #ccc;
+        color: #333; /* 调整文字颜色 */
+        border: none;
+        padding: 0.2rem 1rem; /* 减少上下方向的 padding 以降低按钮高度 */
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+   .action-button:hover {
+        background-color: #0d5fd8;
+        color:white;
+    }
+
 </style>
 
 <div class="relative p-8 rounded-md">
     <!-- 创建新书按钮 -->
-    <button class="absolute top-4 right-4 bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded inline-block" on:click={navigateToCreateBook}>
+    <button class="absolute top-4 right-4 bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded inline-block" on:click={ ()=>navigateToCreateBook('/createbook')}>
         开启创作
     </button>
 </div>
@@ -134,8 +199,10 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     {#each books as book}
         <div
-            class="mb-4 clickable"
-            on:click={() => editbook(book.id,book.content.title,book.pubkey)}
+            class="book-card mb-4 clickable"
+             
+            on:mouseenter={() => handleMouseEnter(book.id)}
+            on:mouseleave={handleMouseLeave}
             role="button"
             tabindex="0"
             on:keydown={(e) => {
@@ -152,7 +219,16 @@
                     <p class="text-gray-500 text-xs whitespace-nowrap">{formatTimestamp(book.created_at)}</p>
                 </div>
             </div>
+
+        {#if hoveredBookId === book.id}
+            <div class="button-container">
+                <button class="action-button" on:click={()=> navigateToCreateBook('/createbook?bookid='+book.newid)}>调整封面</button>
+                <button class="action-button" on:click={() => editbook(book.id,book.content.title,book.pubkey)}>撰写书籍</button>
+            </div>
+        {/if}
         </div>
+
+
     {/each}
 </div>
 

@@ -9,7 +9,7 @@
  
     import { uploadFile } from '$lib/nip96';
     import { defaultUploaderURLs,defaultRelays} from '$lib/config';
-    import {createbook} from '$lib/bookevent';
+    import {createbook,getbook} from '$lib/bookevent';
 
     import {
         getEventHash,
@@ -32,10 +32,12 @@
     let isPublishing = false;
     let publishMessage = '正在发布...';
 
-
+    let isEditing = false;
+    let bookId;
     let bookTitle = '';
     let author = '';
     let coverImage = null;
+    let tags;
 
     const resizeImage = (imageSrc, maxWidth, maxHeight) => {
         return new Promise((resolve) => {
@@ -138,11 +140,20 @@
 
         // 这里可以添加提交表单的逻辑，例如发送数据到服务器
         // upload coverImage to media server 
-        let url = defaultUploaderURLs[0];
-        let file = dataURLToFile(coverImage,"coverImage.png");
-        let response = await uploadFile(url,file,Keypriv); 
-        let coverurl = get_url(response.nip94_event.tags,"url");
-        publishMessage = "封面上传成功，正在发布新书信息";
+        let coverurl;
+
+        if (coverImage.startsWith("https://") || coverImage.startsWith("http://")) {
+            coverurl = coverImage;
+            publishMessage = "正在发布新书信息";
+
+        } else {
+            let url = defaultUploaderURLs[0];
+            let file = dataURLToFile(coverImage,"coverImage.png");
+            let response = await uploadFile(url,file,Keypriv); 
+            coverurl = get_url(response.nip94_event.tags,"url");
+            publishMessage = "封面上传成功，正在发布新书信息";
+        }
+
        
         const bookInfo = {
             coverurl: coverurl,
@@ -152,7 +163,7 @@
 
         
         setTimeout( async () => {
-            let ret = await createbook(defaultRelays,bookInfo,Keypriv);         
+            let ret = await createbook(defaultRelays,bookInfo,tags,Keypriv);         
             publishMessage = "成功发布到 " + ret.size + "个服务器。" ;
             setTimeout(() => {
                 isPublishing = false;
@@ -175,11 +186,42 @@
         window.location.href = href;
     }
 
-    onMount(() => {
+    onMount(async () => {
         document.addEventListener('paste', handlePaste);
         Keypriv = get(keyprivStore);
         Keypub = get(keypubStore);
-         
+        const urlParams = new URLSearchParams(window.location.search);
+        bookId = urlParams.get('bookid'); 
+        if (bookId) {
+            isEditing = true;
+            isPublishing = true;
+            publishMessage = '正在加载...'
+
+            function handlerBookEvent(e){
+                
+                if (e.pubkey != Keypub){
+                   publishMessage = "你不是原作者，无权限编辑此书信息。";
+                   setTimeout(() => {
+                        isPublishing = false;                 
+                    }, 3000);
+                    return ;
+                }
+                isPublishing = false;
+                let bookinfo = JSON.parse(e.content);
+                coverImage = bookinfo.coverurl;
+                bookTitle = bookinfo.title;
+                author = bookinfo.author;
+
+                //保存老事件的e标签;
+                tags = [...e.tags];
+                if (!e.tags.some(tag => tag[0] === "e")) {
+                    tags.push(["e", e.id]);
+                }
+                
+            }
+            getbook(defaultRelays,bookId,handlerBookEvent);
+            
+        }
         return () => {
             document.removeEventListener('paste', handlePaste);
         };
@@ -230,7 +272,7 @@
 </style>
 
 <div class="p-8 max-w-md mx-auto">
-    <p class="text-2xl font-bold text-center text-gray-800 mb-4">创作一本新书</p>
+    <p class="text-2xl font-bold text-center text-gray-800 mb-4">{isEditing? '调整书籍信息' : '创作一本新书'}</p>
     {#if coverImage}
         <div class="mb-4">
             <img src={coverImage} alt="封面图片预览" class="rounded-md" style="width: 100%; aspect-ratio: 260 / 300; border-radius: 0.375rem;" />
@@ -293,7 +335,7 @@
     <div class="info-modal">
         <div class="info-content">
             <div class="flex items-center">
-                {#if publishMessage === '正在发布...'}
+                {#if publishMessage === '正在发布...' || publishMessage === '正在加载...'}
                     <div class="loading-spinner mr-3"></div>
                 {/if}
                 <span>{publishMessage}</span>
