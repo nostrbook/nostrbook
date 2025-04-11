@@ -364,6 +364,7 @@
         box-sizing: border-box;
         font-family: inherit;
         transition: all 0.3s ease;
+        background-color:#fff;
     }
 
     .comment-textarea:hover {
