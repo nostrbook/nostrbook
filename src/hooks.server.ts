@@ -35,5 +35,8 @@ initializeBooks();
 // 注入数据到每个请求
 export const handle: Handle = async ({ event, resolve }) => {
     event.locals.books = cachedBooks; // 共享数据
-    return resolve(event);
+    const response = await resolve(event);
+    const {url,method} = event.request;
+    console.log(url,response.status)
+    return response
 };
