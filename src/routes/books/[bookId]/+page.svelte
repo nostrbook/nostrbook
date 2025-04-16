@@ -144,6 +144,9 @@
        
     } else {
       liked = 0;
+      if (likecount > 0){
+      	likecount -= 1;
+      }
     }
       
   }
