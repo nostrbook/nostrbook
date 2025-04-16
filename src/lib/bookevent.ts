@@ -304,10 +304,5 @@ export async function get_comments_chapter(relays, bookid, mdfile,   handlereven
         await handlerevent(event);
     });
 
-    setTimeout(() => {
-        // 关闭订阅
-        sub.stop();
-        console.log('Subscription has been closed.');
-    }, 20000); // 20 秒后关闭订阅
 }
     
