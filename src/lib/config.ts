@@ -25,4 +25,5 @@ let hub = "";
 export let defaultRelays = defaultRelays1.map(relay => hub + relay );
 
 export let booktag="createbook";
+export let blogtag="createblog";
 export let chaptertag="bookchapter";

@@ -1,6 +1,6 @@
 import NDK ,{NDKPrivateKeySigner,NDKRelaySet,NDKEvent} from "@nostr-dev-kit/ndk";
 import "websocket-polyfill";
-import {booktag,chaptertag} from "./config"
+import {booktag,chaptertag,blogtag} from "./config"
 
  
 // 公共函数：初始化 NDK 实例
@@ -305,4 +305,52 @@ export async function get_comments_chapter(relays, bookid, mdfile,   handlereven
     });
 
 }
+
+
+//blog
+export async function createblog(relays,content,title,cover,Keypriv){
+
+    const ndk =  initNDK(relays,Keypriv);
+    let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+
+    const ndkEvent = new NDKEvent(ndk);
+    ndkEvent.kind = 30023;
+    ndkEvent.content = content;
+    ndkEvent.tags = [
+                ['t',blogtag],
+                ['title',title],
+                ];
+                
+    if (cover) {
+        ndkEvent.tags.push(['cover',cover]);
+    }
+                        
+    await ndkEvent.sign() 
+
+    let response = await ndkEvent.publish(relaySets,2000,0);
+    return response;
+}
+
+export async function bloglist ( relays,handlerevent,pubkey){
+
+    const ndk =  initNDK(relays);
+    let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
     
+    let filters    = {kinds:[30023],'#t': [blogtag]}
+    if (pubkey) {
+        filters.authors = [pubkey];
+    }
+
+    let sub = ndk.subscribe(filters,{},relaySets,true)
+
+    sub.on("event" ,handlerevent)
+
+
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 20000); // 20 秒后关闭订阅
+}

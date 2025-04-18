@@ -191,12 +191,19 @@
         icon: icons.home // 直接引用图标
     },
     { 
-        text: '开启创作', 
+        text: '创建新书', 
         link: '/createbook',
          
         requiresLogin: true,
         icon: icons.create
     },
+    { 
+        text: 'BLOG', 
+        link: '/blog', 
+        requiresLogin: false,
+        icon: icons.blog
+    },
+
     { 
         text: '关于', 
         link: '/about', 
