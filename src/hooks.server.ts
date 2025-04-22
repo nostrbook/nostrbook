@@ -13,7 +13,6 @@ let cachedBooks: any[] = [];
 function initializeBooks() {
     return new Promise<void>((resolve) => {
         booklist(defaultRelays, (e) => {
-            if (e.created_at >= 1742537924) {
                 cachedBooks.push({
                     id: e.id,
                     content: JSON.parse(e.content),
@@ -21,7 +20,6 @@ function initializeBooks() {
                     created_at: e.created_at,
                     pubkey: e.pubkey
                 });
-            }
         });
 
         // 设置超时（避免无限等待）
