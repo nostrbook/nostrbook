@@ -259,10 +259,11 @@ export async function comment_chapter(relays, bookid, mdfile, content , Keypriv)
     await ndk.connect();
 
     const ndkEvent = new NDKEvent(ndk);
-    ndkEvent.kind = 1;
+    ndkEvent.kind = 1111;
     ndkEvent.content = content;
     ndkEvent.tags = [
         ['t', mdfile+'-'+bookid],
+        ["K", "30023"],
     ];
     try {
         await ndkEvent.sign();
@@ -292,6 +293,10 @@ export async function get_comments_chapter(relays, bookid, mdfile,   handlereven
         },
         {
             kinds: [1],
+            "#t": [mdfile+'-'+bookid]
+        },
+        {
+            kinds: [1111],
             "#t": [mdfile+'-'+bookid]
         }
     ];
@@ -367,7 +372,7 @@ export async function readblog(relays,blogid,handlerevent ){
     let filters    = {kinds:[30023],'#t': [blogtag],ids:[blogid]}
  
     let sub = ndk.subscribe(filters,{},relaySets,true)
-                        
+
     sub.on("event" ,handlerevent)
 
 

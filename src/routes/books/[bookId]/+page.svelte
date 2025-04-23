@@ -60,7 +60,7 @@
         }
       }
 
-      if (e.kind == 1){
+      if (e.kind == 1 || e.kind == 1111 ){
         if (e.tags.find((tag) => tag[0] === "t")){
           //comment 
           commentcount += 1;
