@@ -253,12 +253,7 @@
         }
     }
 
-    pre {
-        background-color: #eee;
-        /* 可以根据需要调整其他样式 */
-        padding: 5px;
-        border-radius: 4px;
-    }
+
 
 </style>
 
