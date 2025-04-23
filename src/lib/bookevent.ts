@@ -332,6 +332,52 @@ export async function createblog(relays,content,title,cover,Keypriv){
     return response;
 }
 
+export async function updateblog(relays,content,title,cover,dtag,Keypriv){
+
+    const ndk =  initNDK(relays,Keypriv);
+    let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+
+    const ndkEvent = new NDKEvent(ndk);
+    ndkEvent.kind = 30023;
+    ndkEvent.content = content;
+    ndkEvent.tags = [
+                ['t',blogtag],
+                ['title',title],
+                ['d',dtag],
+                ];
+                
+    if (cover) {
+        ndkEvent.tags.push(['cover',cover]);
+    }
+                        
+    await ndkEvent.sign() 
+
+    let response = await ndkEvent.publish(relaySets,2000,0);
+    return response;
+}
+
+
+export async function readblog(relays,blogid,handlerevent ){
+
+    const ndk =  initNDK(relays);
+    let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
+    await ndk.connect();
+
+    let filters    = {kinds:[30023],'#t': [blogtag],ids:[blogid]}
+ 
+    let sub = ndk.subscribe(filters,{},relaySets,true)
+                        
+    sub.on("event" ,handlerevent)
+
+
+    setTimeout(() => {
+        // 关闭订阅
+        sub.stop();
+        console.log('Subscription has been closed.');
+    }, 20000); // 20 秒后关闭订阅
+}
+
 export async function bloglist ( relays,handlerevent,pubkey){
 
     const ndk =  initNDK(relays);

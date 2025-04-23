@@ -5,6 +5,9 @@
     import { getContext } from 'svelte';
     import { writable, get } from 'svelte/store';
     import EditBlog from '$lib/EditBlog.svelte';
+    import ViewBlog from '$lib/ViewBlog.svelte';
+    import { getDraftsByCategory } from '$lib/WebStorage';
+
 
     const keyprivStore = getContext('keypriv');
     const keypubStore = getContext('keypub');
@@ -12,24 +15,59 @@
     let Keypub;
 
     let blogs = [];
+    let blogdrafts = [];
     let isLoading = false;
     let isWriteblogOpen = false;
+    let isViewblogOpen = false;
+    export let data;
+    let activeButtonIndex = 3 ;
+    let dataToEdit;
+    let blogItem;
 
+    function randthumbnail(img){
+        if (!img)
+            img = data.coverList;
+
+        var length = img.length - 1;
+
+        var rand = Math.floor(Math.random() * Math.floor(length));
+
+        return img[rand]
+    }
+
+    console.log(randthumbnail());
 
     function get_tag(tags,tagName){
         const urlEntry = tags.find(item => item[0] === tagName);
-        return urlEntry[1];
+        return urlEntry? urlEntry[1] : null; // 如果没找到则返回 null
     }
 
     function handlerBlog(e) {
-        e.title = get_tag(e.tags,"title")
-        e.cover = get_tag(e.tags,"cover")
-        blogs = [...blogs, e];
+        
         isLoading = false;
+        
+
+        //myblog 
+        if (activeButtonIndex == 1){
+            if (e.pubkey != Keypub)
+                return ;
+        } 
+        e.title   = get_tag(e.tags, "title")
+        let cover = get_tag(e.tags, "cover");
+        e.cover   = cover ? cover : randthumbnail();
+        blogs     = [...blogs, e];
+        
     }
 
-    function goblog(bookid) {
-        window.location.href = "/blog/" + bookid;
+    function goblog(blog) {
+        if (activeButtonIndex == 0 || activeButtonIndex == 3 ){
+            window.location.href="/blog/"+blog.id
+        } else {
+          dataToEdit = blog;
+          isWriteblogOpen = true;
+           
+        }
+         
     }
 
     function formatTimestamp(timestamp) {
@@ -59,10 +97,52 @@
         };
     });
 
+
+
     function writeBlog() {
         // 这里可以添加写博客的逻辑，比如跳转到写博客页面
         isWriteblogOpen = true;
+        activeButtonIndex = 0 ;
+        dataToEdit = null;
     }
+
+
+    function draftBlog(){
+        activeButtonIndex = 2;
+        blogs = [];
+        blogdrafts  = getDraftsByCategory("blog");
+         
+    }
+
+    function MyBlog(){
+        
+        if (!Keypub){
+            alert("您未登录");
+            return ;
+        }
+        activeButtonIndex = 1;
+
+        isLoading = true;
+
+        blogs = [];
+ 
+        bloglist(defaultRelays, handlerBlog,Keypub);
+    }
+
+    function allBlog() {
+        // 这里可以添加写博客的逻辑，比如跳转到写博客页面
+        isLoading = true;
+        activeButtonIndex = 3 ;
+        blogs = [];
+        bloglist(defaultRelays, handlerBlog);
+    }
+
+    function editblog(blog){
+        dataToEdit = blog;
+        isWriteblogOpen = true;
+
+    }
+
 </script>
 
 <style lang="postcss">
@@ -234,6 +314,23 @@
 
 <hr class="separator">
 
+<!-- 编辑草稿箱 -->
+{#if activeButtonIndex == 2}
+<div class="blog-grid">
+    {#each blogdrafts as blog}
+        <div class="blog-item">
+            <div class="blog-details">
+                <h2 class="blog-title">{blog.blogTitle}</h2>
+                <p class="blog-date">{formatTimestamp(blog.id)}</p>
+                <p class="blog-content">{blog.content.slice(0, 50)}...</p>
+                 <!-- svelte-ignore a11y_invalid_attribute -->
+                <a href="#" class="read-more" on:click|preventDefault={() => editblog(blog)}>编辑</a>
+            </div>
+            <img src={blog.coverImagePreview} alt={blog.blogTitle} class="blog-cover" on:error={handleImageError} />
+        </div>
+    {/each}
+</div>
+{:else}
 <div class="blog-grid">
     {#each blogs as blog}
         <div class="blog-item">
@@ -242,12 +339,13 @@
                 <p class="blog-date">{formatTimestamp(blog.created_at)}</p>
                 <p class="blog-content">{blog.content.slice(0, 50)}...</p>
                  <!-- svelte-ignore a11y_invalid_attribute -->
-                <a href="#" class="read-more" on:click|preventDefault={() => goblog(blog.id)}>阅读更多</a>
+                <a href="#" class="read-more" on:click|preventDefault={() => goblog(blog)}>{ activeButtonIndex == 1 ? '修改': '阅读更多'}</a>
             </div>
             <img src={blog.cover} alt={blog.title} class="blog-cover" on:error={handleImageError} />
         </div>
     {/each}
 </div>
+{/if}
 
 {#if isLoading}
     <div class="info-modal">
@@ -261,10 +359,23 @@
 {/if}
 
 <div class="flex items-center absolute bottom-4 bottom-bar">
-    <button type="button" class="bottom-bar-button" on:click={writeBlog}>
-        写 Blog
+    <button type="button" class="bottom-bar-button" on:click={allBlog} style="color: {activeButtonIndex === 3? '#d4237a' : '#4b5563'}">
+        Blogs
     </button>
-    <!-- 可以在这里添加更多操作选项 -->
+        | 
+    <button type="button" class="bottom-bar-button" on:click={MyBlog} style="color: {activeButtonIndex === 1? '#d4237a' : '#4b5563'}">
+        我的Blog
+    </button>
+       | 
+    <button type="button" class="bottom-bar-button" on:click={writeBlog} style="color: {activeButtonIndex === 0? '#d4237a' : '#4b5563'}">
+        撰写Blog
+    </button>
+        | 
+    <button type="button" class="bottom-bar-button" on:click={draftBlog}  style="color: {activeButtonIndex === 2? '#d4237a' : '#4b5563'}">
+        草稿箱
+    </button>
+
+     
 </div>    
 
-<EditBlog  bind:isWriteblogOpen={isWriteblogOpen} /> 
+<EditBlog  bind:isWriteblogOpen={isWriteblogOpen} {dataToEdit} method={activeButtonIndex} /> 

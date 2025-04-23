@@ -22,7 +22,7 @@
 
     $: if (page){
         let pathname = $page.url.pathname;
-        if (pathname.startsWith('/books')){
+        if (pathname.startsWith('/books') || pathname.startsWith("/blog/")){
             layoutMode = 1;
         }
     }

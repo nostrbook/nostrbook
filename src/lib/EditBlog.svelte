@@ -1,6 +1,6 @@
 <script lang="ts">
      
-    import { bloglist,createblog } from '$lib/bookevent';
+    import { bloglist,createblog,updateblog } from '$lib/bookevent';
     import { getContext } from'svelte';
     import { writable, get } from'svelte/store';
     import { page } from '$app/stores';
@@ -8,19 +8,24 @@
     import SimpleMDE from '$lib/simpleMDE.svelte';
     import { uploadFile } from '$lib/nip96';
     import { defaultUploaderURLs,defaultRelays} from '$lib/config';
+    import {saveDraft,getDraft} from '$lib/WebStorage';
 
     // 状态管理
     let isLoading = false;
     let saved = true;
     export let isWriteblogOpen: boolean;
+    export let dataToEdit;
+    export let method;
+
 
     let content: string = "";
     let simplemde;
+    let updatecontent; //修改的时候内容 赋值这样可以让编辑框显示 修改的内容;
     let Title: string = "";
     let blogTitle: string = ""; // 明确博客标题变量
-    let mdfilename: string = ""; // 明确 Markdown 文件名变量
+     
     let blogId: string = ""; // 明确博客 ID 变量
-    let draftTOC = []; // 草稿目录
+   
     let dMessage = ""; // 加载提示信息
     let coverImage: File | null = null; // 新增：封面图片文件
     let coverImagePreview: string | null = null; // 新增：封面图片预览 URL
@@ -29,6 +34,9 @@
     const keypubStore = getContext('keypub');
     let Keypriv: string;
     let Keypub: string;
+
+    let currentBlogDraftId;
+
 
     // 工具函数
     function getTag(tags: string[][], tagName: string): string {
@@ -41,8 +49,13 @@
         isLoading = state;
     }
 
+
+
     // 关闭博客编辑器
     const closeWriteblog = (ischeck: number): void => {
+        
+        currentBlogDraftId = null;
+
         if (ischeck === 0) {
             isWriteblogOpen = false;
             window.location.reload();
@@ -51,69 +64,51 @@
         window.location.reload();
         isWriteblogOpen = false;
     };
+ 
 
-    // 保存草稿相关
-    function getDraftKey(mdfilename: string, blogId: string) {
-        return `${mdfilename}-${blogId}`;
-    }
-
-    function saveDraft() {
+    function saveDraftSubmit() {
         if (blogTitle === "") {
             alert("标题不能为空，请输入标题后再保存草稿。");
             return;
         }
-        if (mdfilename === "") {
-            alert("Markdown 文件名不能为空，请输入文件名后再保存草稿。");
-            return;
-        }
+
         const contentToSave = simplemde.value();
         if (contentToSave === "") {
             alert("内容不能为空，请输入内容后再保存草稿。");
             return;
         }
-        const draftKey = getDraftKey(mdfilename, blogId);
+ 
         const draft = {
             blogTitle,
-            mdfilename,
             content: simplemde.value(),
-            coverImage: coverImage? coverImage.name : null // 保存封面图片文件名
+            coverImagePreview: coverImagePreview? coverImagePreview: null // 保存封面图片文件名
         };
-        localStorage.setItem(draftKey, JSON.stringify(draft));
+ 
+        if (!currentBlogDraftId) {
+            currentBlogDraftId = Math.floor(Date.now() / 1000);
+        }
+
+        // 使用当前的草稿 ID 进行保存，实现覆盖逻辑
+        saveDraft("blog", currentBlogDraftId, draft);
+
         saved = true;
         alert("草稿已保存");
-        getDraftsByBlogId();
+         
     }
 
-    function loadDraft() {
-        const draftKey = getDraftKey(mdfilename, blogId);
-        const draft = localStorage.getItem(draftKey);
+    function loadDraftSubmit(blogid) {
+        let draft = getDraft("blog", blogid);
         if (draft) {
-            const { blogTitle: draftTitle, mdfilename: draftFilename, content: draftContent, coverImage: draftCoverImage } = JSON.parse(draft);
+            const { blogTitle: draftTitle, content: draftContent, coverImagePreview: draftCoverImage } = JSON.parse(draft);
+            // 假设 blogTitle 是一个可以直接赋值的变量
             blogTitle = draftTitle;
-            mdfilename = draftFilename;
+            // 去掉未定义的 mdfilename 和 draftFilename 相关代码
             content = draftContent;
             simplemde.value(content);
-            if (draftCoverImage) {
-                // 这里需要根据实际情况处理封面图片的加载，例如从服务器获取图片
-                // 暂时简单处理，可根据实际情况修改
-                coverImagePreview = null; 
-            }
-        }
+            currentBlogDraftId  = blogid;
+        } 
     }
 
-    function getDraftsByBlogId() {
-        draftTOC = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.endsWith(`-${blogId}`)) {
-                const draft = localStorage.getItem(key);
-                if (draft) {
-                    const { blogTitle: title, mdfilename: file, coverImage: cover } = JSON.parse(draft);
-                    draftTOC.push({ title, id: null, file, cover });
-                }
-            }
-        }
-    }
     function get_url(tags,tagName){
         const urlEntry = tags.find(item => item[0] === tagName);
         return urlEntry[1];
@@ -187,11 +182,34 @@
     // 响应式语句
     $: if (isWriteblogOpen) {
         saved = false;
+         
+        if (method == 2){ //draft
+            blogTitle          = dataToEdit.blogTitle;
+            content            = dataToEdit.content;
+            coverImagePreview  = dataToEdit.coverImagePreview;
+            currentBlogDraftId = dataToEdit.id 
+            updatecontent = content;
+        } else {
+            currentBlogDraftId = null;
+        }
+
+        if  (method == 1){
+            blogTitle = getTag(dataToEdit.tags,"title");
+            content = dataToEdit.content;
+            updatecontent = content;
+             
+            coverImagePreview =  getTag(dataToEdit.tags,"cover");
+        }
+      
+
     }
 
     $: if (blogTitle) { saved = false; }
     $: if (content) { saved = false; }
     $: if (simplemde) { content = simplemde.value(); }
+    $: if (simplemde && updatecontent) {
+        simplemde.value(updatecontent);
+    }
 
     // 组件挂载
     onMount(() => {
@@ -208,7 +226,13 @@
             console.log(blogTitle);
             content = simplemde.value();
             console.log(content);
-            let ret = await createblog(defaultRelays,content,blogTitle,coverImagePreview,Keypriv);
+            let ret ;
+            if (method == 1){
+                let dtag = getTag(dataToEdit.tags,"d");
+                ret = await updateblog(defaultRelays,content,blogTitle,coverImagePreview,dtag,Keypriv);
+            }else {
+                ret = await createblog(defaultRelays,content,blogTitle,coverImagePreview,Keypriv);
+            }
             saved = true;
             if (ret.size === 0) {
                 dMessage = `发布失败，未成功发布到任何服务器,已经保存到草稿。`;
@@ -223,6 +247,7 @@
             
         } catch (error) {
             alert('博客提交失败:', error);
+            console.log(error);
         } finally {
             setLoading(false);
         }
@@ -462,7 +487,7 @@
                     </button>
                     <button
                         class="button button-secondary"
-                        on:click={saveDraft}
+                        on:click={saveDraftSubmit}
                         disabled={isLoading}
                     >
                         保存草稿

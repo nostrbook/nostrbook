@@ -41,11 +41,11 @@ const successfulUrls = new Set<string>();
 // 生成 sitemap.xml 文件的函数
 const generateSitemap = () => {
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${Array.from(successfulUrls).map(url => `  <url>
-    <loc>${url}</loc>
-  </url>`).join('\n')}
-</urlset>`;
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    ${Array.from(successfulUrls).map(url => `  <url>
+        <loc>${url}</loc>
+    </url>`).join('\n')}
+    </urlset>`;
 
     const filePath = path.join(process.cwd(), 'static', 'sitemap.xml');
     fs.writeFile(filePath, sitemapContent, (err) => {

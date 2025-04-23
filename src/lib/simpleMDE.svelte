@@ -26,6 +26,10 @@
     }
 
     const handlePaste = async (event) => {
+        if (!simplemde || !simplemde.codemirror.hasFocus()) {
+            return; // 焦点不在编辑器内，不处理
+        }
+
         const clipboardData = event.clipboardData;
 
         if (clipboardData) {

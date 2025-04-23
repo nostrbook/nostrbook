@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
+ 
 // 定义允许的图片扩展名类型
 type ImageExtension = '.png' | '.jpg' | '.jpeg' | '.bmp' | '.svg' | '.gif' | '.webp';
 
@@ -14,6 +14,8 @@ const ALLOWED_EXTENSIONS: Set<ImageExtension> = new Set([
     '.gif',
     '.webp'
 ]);
+
+const urlpath="/img/thumbnail/"
 
 /**
  * 获取指定目录下的图片文件列表
@@ -39,7 +41,7 @@ export function getimglist(directoryPath: string): string[] {
         files.forEach((file) => {
             const ext = path.extname(file).toLowerCase() as ImageExtension;
             if (ALLOWED_EXTENSIONS.has(ext)) {
-                imglist.push(file);
+                imglist.push(urlpath + file);
             }
         });
 
@@ -50,11 +52,12 @@ export function getimglist(directoryPath: string): string[] {
 }
  
  
-const projectRoot = path.resolve(__dirname, '../../');
-const thumbnailDir = path.join(projectRoot, 'static', 'img', 'thumbnail');
+ 
+const thumbnailDir = path.join(process.cwd(), 'static', 'img', 'thumbnail');
+export let coverList ;
 try {
-    const imageList = getimglist(thumbnailDir);
-    console.log(imageList);
+    coverList = getimglist(thumbnailDir);
+    
 } catch (error) {
     console.error(error.message);
 }

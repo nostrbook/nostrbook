@@ -3,7 +3,8 @@
     import { getContext } from'svelte';
     import { writable, get } from'svelte/store';
     import { page } from '$app/stores';
-    import { onMount } from'svelte';
+    import { onMount } from 'svelte';
+ 
 
     export let isViewblogOpen: boolean;
     export let blogItem;
@@ -13,51 +14,46 @@
     const keypubStore = getContext('keypub');
     let Keypriv;
     let Keypub;
-
+ 
 
     const closeViewblog = (ischeck: number): void => {
         
         isViewblogOpen = false;
+        window.location.href = "/blog";
     };
 
-  onMount(async () => {
+    onMount(async () => {
 
-    Keypriv = get(keyprivStore);
-    Keypub = get(keypubStore);
-
-
-    const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
-    // 拦截逻辑
-    if (url.includes("bloghomepage.md")) {
-        console.log("拦截请求:", url);
-        // 可以修改 URL 或阻止请求
-    } else {
-    // 调用原始 open 方法
-        originalOpen.call(this, method, url, async, user, password);
-    }
-    };
-
-  
-
-    // 动态加载 JS
-    const js = document.createElement('script');
-    js.src = '/static/js/docsify.min.js';
-    document.body.appendChild(js);
-
- 
- 
-
-    window.$docsify = {
-      name: blogItem?blogItem.title:'nostrblog',
-      loadSidebar: false,
-      hideSidebar: true,
-      homepage:"bloghomepage.md",
+        Keypriv = get(keyprivStore);
+        Keypub = get(keypubStore);
     
-    };
- 
+        // 动态加载 CSS
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/static/css/vue.css';
+        document.head.appendChild(css);
 
-  });
+        // 动态加载 JS
+        const js = document.createElement('script');
+        js.src = '/static/js/docsify.min.js';
+        document.body.appendChild(js);
+
+        const styleElements = document.getElementsByTagName('style');
+        let targetStyleElement = null;
+        for (let i = 0; i < styleElements.length; i++) {
+            const element = styleElements[i];
+            const dataViteDevId = element.getAttribute('data-vite-dev-id');
+            if (dataViteDevId && dataViteDevId.includes('app.css')) {            
+                element.parentNode.removeChild(element);
+                break;
+            }
+        }
+    
+
+    
+
+    });
+
     function formatTimestamp(timestamp) {
         if (String(timestamp).length < 13) {
             timestamp = timestamp * 1000;
@@ -71,11 +67,10 @@
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     }
 
-
    $: if (blogItem) { 
-        console.log(blogItem);
+        
         compiledContent = window.__current_docsify_compiler__.compile(blogItem.content);
-        console.log(compiledContent);
+         
     }
 
 </script>
@@ -88,7 +83,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
+         
         display: flex;
         justify-content: center;
         align-items: center;
@@ -257,6 +252,14 @@
             height: 120px;
         }
     }
+
+    pre {
+        background-color: #eee;
+        /* 可以根据需要调整其他样式 */
+        padding: 5px;
+        border-radius: 4px;
+    }
+
 </style>
 
 {#if isViewblogOpen}
@@ -290,7 +293,9 @@
                 </div>
             </div>
             <div class="blog-content">
-                {@html compiledContent}
+                <article class="markdown-section" id="main">
+                    {@html compiledContent}
+                </article>
             </div>
         </div>
     </div>
