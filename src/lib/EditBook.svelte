@@ -125,17 +125,20 @@
         const title = getTag(e.tags, 'title');
         const filename = getTag(e.tags, 'd').split("-")[0];
         if (filename === "_sidebar.md") {
+            
             eventOutline = e;
             format_sidebar();
             timeTOC.map(item => {
                 outlineTOC = updateTOC(outlineTOC, item);
             });
+            
             tableOfContents = outlineTOC;
             return;
         }
         timeTOC = [{ title: title, id: e.id, file: filename }, ...timeTOC];
         outlineTOC = updateTOC(outlineTOC, { title: title, id: e.id, file: filename });
         tableOfContents = updateTOC(tableOfContents, { title: title, id: e.id, file: filename });
+         
     }
 
     function format_sidebar() {
@@ -149,6 +152,7 @@
             results.push({ title, file: mdFile.split('/').pop(), id: "" });
         }
         outlineTOC = results;
+         
     }
 
     function handler_one_chapter(e): void {
@@ -584,6 +588,7 @@
                         on:click={() => handleSortChange('draft')} />
                 </div>
 
+              
                 <ul class="chapter-list">
                     {#each tableOfContents as toc}
                         <li class="chapter-item">
@@ -605,7 +610,7 @@
                         </li>
                     {/each}
                 </ul>
-
+                <div style="height:40px;"> </div>
                 <div class="flex items-center gap-3 mb-4 absolute bottom-2">
                     <!-- 新增章节按钮 -->
                     <button
