@@ -73,6 +73,11 @@
          
     }
 
+    function handleImageError(event) {
+        
+        event.target.src = '/uploadfiles/?imgsrc='+event.target.src;
+    }
+
 </script>
 
 <style>
