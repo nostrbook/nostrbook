@@ -14,12 +14,16 @@
     let Keypriv;
     let Keypub;
 
-    let blogs = [];
+    //from +page.server.ts 
+    export let data;
+
+    let blogs = data.blogs;
+    let tempblogs = [];
     let blogdrafts = [];
     let isLoading = false;
     let isWriteblogOpen = false;
     let isViewblogOpen = false;
-    export let data;
+ 
     let activeButtonIndex = 3 ;
     let dataToEdit;
     let blogItem;
@@ -34,9 +38,7 @@
 
         return img[rand]
     }
-
-    console.log(randthumbnail());
-
+ 
     function get_tag(tags,tagName){
         const urlEntry = tags.find(item => item[0] === tagName);
         return urlEntry? urlEntry[1] : null; // 如果没找到则返回 null
@@ -55,18 +57,15 @@
         e.title   = get_tag(e.tags, "title")
         let cover = get_tag(e.tags, "cover");
         e.cover   = cover ? cover : randthumbnail();
-        blogs     = [...blogs, e];
-        
+        tempblogs     = [...tempblogs, e];
+
+        blogs = tempblogs;        
     }
 
-    function goblog(blog) {
-        if (activeButtonIndex == 0 || activeButtonIndex == 3 ){
-            window.location.href="/blog/"+blog.id
-        } else {
+    function updateblog(blog) {
+ 
           dataToEdit = blog;
           isWriteblogOpen = true;
-           
-        }
          
     }
 
@@ -339,7 +338,11 @@
                 <p class="blog-date">{formatTimestamp(blog.created_at)}</p>
                 <p class="blog-content">{blog.content.slice(0, 50)}...</p>
                  <!-- svelte-ignore a11y_invalid_attribute -->
-                <a href="#" class="read-more" on:click|preventDefault={() => goblog(blog)}>{ activeButtonIndex == 1 ? '修改': '阅读更多'}</a>
+                 {#if activeButtonIndex == 1}
+                  <a href="#" class="read-more" on:click|preventDefault={() => updateblog(blog)}>修改</a>
+                 {:else}
+                    <a href="/blog/{blog.id}" class="read-more"  >阅读更多</a>
+                 {/if}   
             </div>
             <img src={blog.cover} alt={blog.title} class="blog-cover" on:error={handleImageError} />
         </div>
