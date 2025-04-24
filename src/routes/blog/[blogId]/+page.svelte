@@ -11,6 +11,9 @@
     let blogItem;
     let isViewblogOpen = false;
     let isLoading = true;
+
+    //from +page.server.ts 
+    export let data;
     
     function randthumbnail(img){
         if (!img)
@@ -47,11 +50,9 @@
         
         isLoading = false;
       
-
-        e.title   = get_tag(e.tags, "title")
+        e.title   = get_tag(e.tags, "title") 
         let cover = get_tag(e.tags, "cover");
-        e.cover   = cover ? cover : randthumbnail();
-        
+        e.cover   = cover ? cover : randthumbnail();       
         blogItem = e;
         isViewblogOpen = true;
  
