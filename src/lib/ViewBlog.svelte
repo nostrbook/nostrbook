@@ -264,6 +264,14 @@
         }
     }
 
+    ol {
+        list-style-type: decimal;
+    }
+
+    /* 这是无序列表的样式，这里不做修改，保持默认的圆点显示 */
+    ul {
+        list-style-type: disc;
+    }
 
 
 </style>
