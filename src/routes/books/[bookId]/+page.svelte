@@ -413,7 +413,7 @@
       ul {
               list-style-type: disc;
           }
-      img {
+      #main img {
         max-width: 60%;
       }
 
