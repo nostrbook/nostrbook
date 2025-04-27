@@ -6,8 +6,9 @@
   import {  slide } from 'svelte/transition';
   import { defaultRelays } from '$lib/config';
   import {  read_chapter_docs ,get_comments_chapter,like_chapter,comment_chapter} from '$lib/bookevent';
-  import {WebStorage} from '$lib/WebStorage'
-  import {   getPublicKey } from 'nostr-tools/pure'
+  import {WebStorage} from '$lib/WebStorage';
+  import {   getPublicKey } from 'nostr-tools/pure';
+  import { imgClassPlugin} from '$lib/docsify_plugin';
       
  
   let Keypriv;
@@ -112,6 +113,7 @@
       loadSidebar: true,
       homepage: "readme.md",
       subMaxLevel:2,
+      plugins: [imgClassPlugin],
       alias: {
           '/_sidebar.md': './_sidebar.md',
       }
@@ -416,6 +418,20 @@
       #main img {
         max-width: 60%;
       }
+
+      /* styles.css */
+    .user-img {
+         
+        height: auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .user-img:hover {
+        transform: scale(1.01);
+    }
 
   }
 

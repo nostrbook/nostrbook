@@ -4,6 +4,7 @@
     import { writable, get } from'svelte/store';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
+    import { processMarkdownImages} from '$lib/docsify_plugin';
  
 
     export let isViewblogOpen: boolean;
@@ -50,8 +51,7 @@
             }
         }
     
-
-    
+ 
 
     });
 
@@ -69,8 +69,8 @@
     }
 
    $: if (blogItem) { 
-        
-        compiledContent = window.__current_docsify_compiler__.compile(blogItem.content);
+        let precontent = processMarkdownImages(blogItem.content);
+        compiledContent = window.__current_docsify_compiler__.compile(precontent);
          
     }
 
@@ -275,7 +275,20 @@
             }
       #main img {
         max-width: 60%;
-      }           
+      }  
+    .user-img {
+         
+        height: auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .user-img:hover {
+        transform: scale(1.01);
+    }
+           
     }
 
 
