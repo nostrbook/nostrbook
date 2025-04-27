@@ -21,10 +21,18 @@
     let layoutMode = 0;
 
     $: if (page){
-        let pathname = $page.url.pathname;
-        if (pathname.startsWith('/books') || pathname.startsWith("/blog/")){
-            layoutMode = 1;
+        try {
+            let pathname = $page.url.pathname;
+        
+            if (pathname.startsWith('/books') || pathname.startsWith("/blog/")){
+                layoutMode = 1;
+            } else {
+                layoutMode = 0;
+            }
+        } catch {
+             
         }
+
     }
 
 
