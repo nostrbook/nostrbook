@@ -110,8 +110,8 @@
     
     /* 关闭按钮 */
     .close-button {
-        position: fixed;
-        top: 1.5rem;
+        position: absolute;
+        top: 0.5rem;
         right: 1.5rem;
         width: 2.5rem;
         height: 2.5rem;
@@ -127,6 +127,7 @@
         color: #333;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         transition: all 0.2s ease;
+        border: 1px solid #5599ff;
     }
     
     .close-button:hover {
@@ -296,10 +297,11 @@
 
 {#if isViewblogOpen}
     <div class="viewblog-overlay">
+
+        <div class="viewblog-container">
         <button class="close-button" on:click={closeViewblog} aria-label="关闭编辑器">
             ×
         </button>
-        <div class="viewblog-container">
             <div class="blog-header">
                 {#if blogItem.cover}
                 <div class="blog-cover-container">

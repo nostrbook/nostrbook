@@ -233,6 +233,7 @@
         object-fit: cover;
         margin-left: 2rem;
         margin-right: 1rem;
+        border-radius: 0.5rem;
     }
 
     .blog-details {
@@ -277,7 +278,7 @@
         left: 58%;
         transform: translateX(-58%);
         background-color: white;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #d28eff;
         padding: 0.2rem 0.2rem;
         display: flex;
         justify-content: center;
@@ -334,9 +335,11 @@
     {#each blogs as blog}
         <div class="blog-item">
             <div class="blog-details">
+            <a href="/blog/{blog.id}" class="read-more"  >
                 <h2 class="blog-title">{blog.title}</h2>
                 <p class="blog-date">{formatTimestamp(blog.created_at)}</p>
                 <p class="blog-content">{blog.content.slice(0, 50)}...</p>
+            </a>
                  <!-- svelte-ignore a11y_invalid_attribute -->
                  {#if activeButtonIndex == 1}
                   <a href="#" class="read-more" on:click|preventDefault={() => updateblog(blog)}>修改</a>

@@ -219,7 +219,8 @@
 
     // 提交博客逻辑（简单示例，可根据实际需求完善）
     async function submitBlog() {
-        setLoading(true);
+        dMessage = `正在发布blog`;
+        isLoading = true;
         try {
             // 这里可以添加实际的提交逻辑，比如调用 API 保存博客
             console.log(coverImagePreview);
@@ -236,7 +237,7 @@
             saved = true;
             if (ret.size === 0) {
                 dMessage = `发布失败，未成功发布到任何服务器,已经保存到草稿。`;
-                //saveDraft();
+                saveDraftSubmit();
             } else {
                 dMessage = `成功发布到 ${ret.size} 个服务器。`;
             }
@@ -248,9 +249,7 @@
         } catch (error) {
             alert('博客提交失败:', error);
             console.log(error);
-        } finally {
-            setLoading(false);
-        }
+        } 
     }
 </script>
 
@@ -298,7 +297,7 @@
 
     .close-button {
         position: absolute;
-        top: 1rem;
+        top: 0.5rem;
         right: 1rem;
         width: 2rem;
         height: 2rem;
@@ -312,6 +311,7 @@
         border: none;
         font-size: 1.2rem;
         color: #6c757d;
+        border: 1px solid #5599ff;
     }
 
     .close-button:hover {
@@ -457,10 +457,11 @@
 
 {#if isWriteblogOpen}
     <div class="writeblog-overlay">
+
+        <div class="writeblog-container">
         <button class="close-button" on:click={() => closeWriteblog(1)} aria-label="关闭编辑器">
             ×
         </button>
-        <div class="writeblog-container">
             <div class="left-editor">
                 <div class="mb-4">
                     <label for="title-input" class="font-medium">标题:</label>
