@@ -1,10 +1,10 @@
 <script lang="ts">
      
-    import { getContext } from'svelte';
+    import { getContext ,afterUpdate} from'svelte';
     import { writable, get } from'svelte/store';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { processMarkdownImages} from '$lib/docsify_plugin';
+    import { processMarkdownImages,codeCopy} from '$lib/docsify_plugin';
  
 
     export let isViewblogOpen: boolean;
@@ -69,11 +69,21 @@
     }
 
    $: if (blogItem) { 
+ 
         let precontent = processMarkdownImages(blogItem.content);
         compiledContent = window.__current_docsify_compiler__.compile(precontent);
          
     }
 
+    let container;
+    
+    afterUpdate(() => {
+        if (container?.innerHTML) {
+            codeCopy();
+        }
+    });
+
+ 
     function handleImageError(event) {
         
         event.target.src = '/uploadfiles/?imgsrc='+event.target.src;
@@ -337,8 +347,8 @@
                 </div>
             </div>
             <div class="blog-content">
-                <article class="markdown-section" id="main">
-                    {@html compiledContent}
+                <article class="markdown-section" id="main" bind:this={container}>
+                     {@html compiledContent}
                 </article>
             </div>
         </div>

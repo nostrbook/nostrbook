@@ -8,7 +8,7 @@
   import {  read_chapter_docs ,get_comments_chapter,like_chapter,comment_chapter} from '$lib/bookevent';
   import {WebStorage} from '$lib/WebStorage';
   import {   getPublicKey } from 'nostr-tools/pure';
-  import { imgClassPlugin} from '$lib/docsify_plugin';
+  import { imgClassPlugin,codeCopyPlugin} from '$lib/docsify_plugin';
       
  
   let Keypriv;
@@ -113,7 +113,12 @@
       loadSidebar: true,
       homepage: "readme.md",
       subMaxLevel:2,
-      plugins: [imgClassPlugin],
+      plugins: [imgClassPlugin,
+        function (hook, vm) {
+            // 引入代码复制插件
+            codeCopyPlugin(hook, vm);
+        }
+        ],
       alias: {
           '/_sidebar.md': './_sidebar.md',
       }
