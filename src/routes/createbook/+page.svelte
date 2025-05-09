@@ -7,8 +7,9 @@
      type OptionalFormDataFields,
     } from 'nostr-tools/nip96';
  
-    import { uploadFile } from '$lib/nip96';
-    import { defaultUploaderURLs,defaultRelays} from '$lib/config';
+    import { uploadFileBlossom } from '$lib/blossomUpload';
+    import { defaultUploaderBlossom,defaultRelays} from '$lib/config';
+
     import {createbook,getbook} from '$lib/bookevent';
 
     import {
@@ -147,10 +148,11 @@
             publishMessage = "正在发布新书信息";
 
         } else {
-            let url = defaultUploaderURLs[0];
+            let url = defaultUploaderBlossom[0];
             let file = dataURLToFile(coverImage,"coverImage.png");
-            let response = await uploadFile(url,file,Keypriv); 
-            coverurl = get_url(response.nip94_event.tags,"url");
+            let response = await uploadFileBlossom(url,file,Keypriv); 
+            coverurl = response.url;
+            //get_url(response.nip94_event.tags,"url");
             publishMessage = "封面上传成功，正在发布新书信息";
         }
 

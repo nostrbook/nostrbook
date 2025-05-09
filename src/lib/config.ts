@@ -11,6 +11,9 @@ export const defaultUploaderURLs = [
   'https://blossom.nogood.studio',
 
 ];
+export const defaultUploaderBlossom = [
+    "https://nosto.re/",
+];
 
 export const defaultRelays1 = [
   'wss://hk.purplerelay.com', 

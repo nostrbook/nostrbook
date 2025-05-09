@@ -6,8 +6,9 @@
     import { page } from '$app/stores';
     import { onMount } from'svelte';
     import SimpleMDE from '$lib/simpleMDE.svelte';
-    import { uploadFile } from '$lib/nip96';
-    import { defaultUploaderURLs,defaultRelays} from '$lib/config';
+   // import { uploadFile } from '$lib/nip96';
+    import { uploadFileBlossom } from '$lib/blossomUpload';
+    import { defaultUploaderBlossom,defaultRelays} from '$lib/config';
     import {saveDraft,getDraft} from '$lib/WebStorage';
 
     // 状态管理
@@ -115,9 +116,10 @@
     }
 
     async function uploadCoverImage(file){
-            let url = defaultUploaderURLs[0];             
-            let response = await uploadFile(url,file,Keypriv); 
-            let coverurl = get_url(response.nip94_event.tags,"url");
+            let url = defaultUploaderBlossom[0];             
+            let response = await uploadFileBlossom(url,file,Keypriv); 
+            let coverurl = response.url;
+            //get_url(response.nip94_event.tags,"url");
             dMessage = "封面上传成功 ";
             setTimeout(() => {
                 isLoading = false; 

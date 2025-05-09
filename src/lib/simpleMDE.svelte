@@ -1,7 +1,7 @@
 <script>
     import { onMount } from 'svelte';
-    import { uploadFile } from '$lib/nip96';
-    import { defaultUploaderURLs, defaultRelays } from '$lib/config';
+    import { uploadFileBlossom } from '$lib/blossomUpload';
+    import { defaultUploaderBlossom,defaultRelays} from '$lib/config';
     import { getContext } from 'svelte';
     import { writable, get } from 'svelte/store';
 
@@ -41,9 +41,10 @@
                     isupload = true;
                     loadMessage = "正在上传图片";
 
-                    let url = defaultUploaderURLs[0];
-                    let response = await uploadFile(url, blob, Keypriv);
-                    let coverurl = get_url(response.nip94_event.tags, "url");
+                    let url = defaultUploaderBlossom[0];
+                    let response = await uploadFileBlossom(url, blob, Keypriv);
+                    let coverurl = response.url;
+                    //get_url(response.nip94_event.tags, "url");
                     console.log(coverurl);
                     isupload = false;
 
