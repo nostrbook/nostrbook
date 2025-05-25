@@ -1,7 +1,11 @@
 import NDK ,{NDKPrivateKeySigner,NDKRelaySet,NDKEvent} from "@nostr-dev-kit/ndk";
-import "websocket-polyfill";
 import {booktag,chaptertag,blogtag} from "./config"
+import {WebSocket} from 'ws';
 
+const isBrowser = typeof window !== 'undefined' && window.window === window;
+if (!isBrowser){
+    global.WebSocket = WebSocket;
+}
  
 // 公共函数：初始化 NDK 实例
 function initNDK(relays, Keypriv) {
@@ -23,7 +27,7 @@ export async function createbook(relays,content,tags,Keypriv){
     const ndk =  initNDK(relays,Keypriv);
 
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     console.log("connect ok,",content)
     const ndkEvent = new NDKEvent(ndk);
@@ -47,10 +51,10 @@ export async function getbook(relays,bookid,handlerevent){
     const ndk =  initNDK(relays);
 
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
     let filters    = {kinds:[30023],'ids': [bookid]}
 
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 
@@ -67,14 +71,14 @@ export async function booklist ( relays,handlerevent ,pubkey){
 
     const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
     
     let filters    = {kinds:[30023],'#t': [booktag]}
     if (pubkey) {
         filters.authors = [pubkey];
     }
 
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 
@@ -90,7 +94,7 @@ export async function createchapter(relays,content,title,filename,bookid,Keypriv
 
     const ndk =  initNDK(relays,Keypriv);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 30023;
@@ -112,7 +116,7 @@ export async function updatechapter(relays,content,title,filename,bookid,Keypriv
 
     const ndk =  initNDK(relays,Keypriv);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 30023;
@@ -134,7 +138,7 @@ export async function read_book_chapters ( relays,bookid ,pubkey,handlerevent){
 
     const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
     console.log("connect..")
     let filters    = {kinds:[30023],'#t': [chaptertag], "#e":[bookid]}
     if (pubkey) {
@@ -142,7 +146,7 @@ export async function read_book_chapters ( relays,bookid ,pubkey,handlerevent){
     }
     console.log(filters);
 
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 
@@ -160,7 +164,7 @@ export async function read_chapter ( relays,bookid,chapterid ,pubkey,handlereven
     const ndk =  initNDK(relays );
 
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
     console.log("connect..")
     let filters    = {kinds:[30023],"#e":[bookid]}
     if (pubkey) {
@@ -173,7 +177,7 @@ export async function read_chapter ( relays,bookid,chapterid ,pubkey,handlereven
 
     console.log(filters);
 
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 
@@ -189,13 +193,13 @@ export async function read_chapter_docs ( relays,bookid,filename,handlerevent){
 
     const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
     console.log("connect..")
     let filters    = {kinds:[30023],"#e":[bookid],"#d":[filename + "-" + bookid ]}
  
     console.log(filters);
 
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 
@@ -213,7 +217,7 @@ export async function like_chapter(relays, bookid, mdfile, isVote,Keypriv) {
          
         const ndk = initNDK(relays, Keypriv);
         const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-        await ndk.connect();
+        await ndk.connect(2000);
     
         const ndkEvent = new NDKEvent(ndk);
         ndkEvent.kind = 5;
@@ -233,7 +237,7 @@ export async function like_chapter(relays, bookid, mdfile, isVote,Keypriv) {
  
     const ndk = initNDK(relays, Keypriv);
     const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 7;
@@ -256,7 +260,7 @@ export async function comment_chapter(relays, bookid, mdfile, content , Keypriv)
  
     const ndk = initNDK(relays, Keypriv);
     const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 1111;
@@ -280,7 +284,7 @@ export async function get_comments_chapter(relays, bookid, mdfile,   handlereven
 
     const ndk = initNDK(relays);
     const relaySets = NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const filters = [
         {
@@ -301,7 +305,7 @@ export async function get_comments_chapter(relays, bookid, mdfile,   handlereven
         }
     ];
 
-    const sub  = ndk.subscribe(filters,{},relaySets,true);
+    const sub  = ndk.subscribe(filters,{relaySet:relaySets},{},true);
 
     // 处理接收到的事件
     sub.on('event', async (event) => {
@@ -317,7 +321,7 @@ export async function createblog(relays,content,title,cover,Keypriv){
 
     const ndk =  initNDK(relays,Keypriv);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 30023;
@@ -341,7 +345,7 @@ export async function updateblog(relays,content,title,cover,dtag,Keypriv){
 
     const ndk =  initNDK(relays,Keypriv);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     const ndkEvent = new NDKEvent(ndk);
     ndkEvent.kind = 30023;
@@ -367,11 +371,11 @@ export async function readblog(relays,blogid,handlerevent ){
 
     const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
 
     let filters    = {kinds:[30023],'#t': [blogtag],ids:[blogid]}
  
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 
@@ -387,14 +391,14 @@ export async function bloglist ( relays,handlerevent,pubkey){
 
     const ndk =  initNDK(relays);
     let relaySets =  NDKRelaySet.fromRelayUrls(ndk._explicitRelayUrls, ndk);
-    await ndk.connect();
+    await ndk.connect(2000);
     
     let filters    = {kinds:[30023],'#t': [blogtag]}
     if (pubkey) {
         filters.authors = [pubkey];
     }
 
-    let sub = ndk.subscribe(filters,{},relaySets,true)
+    let sub = ndk.subscribe(filters,{relaySet:relaySets},{},true)
 
     sub.on("event" ,handlerevent)
 

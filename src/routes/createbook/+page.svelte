@@ -2,10 +2,7 @@
     import { onMount } from 'svelte';
     import type { EventTemplate } from 'nostr-tools/pure';
     import  { finalizeEvent } from 'nostr-tools/pure';
-    import {
-     type FileUploadResponse,
-     type OptionalFormDataFields,
-    } from 'nostr-tools/nip96';
+
  
     import { uploadFileBlossom } from '$lib/blossomUpload';
     import { defaultUploaderBlossom,defaultRelays} from '$lib/config';

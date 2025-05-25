@@ -16,15 +16,14 @@ export const defaultUploaderBlossom = [
 ];
 
 export const defaultRelays1 = [
-  'wss://hk.purplerelay.com', 
+  
   'wss://relay.j35tr.com', 
-  'wss://kr.purplerelay.com',
   'wss://relay.damus.io/',
   'wss://relay.primal.net/',
 ];
 
 //let hub = "wss://bridge.duozhutuan.com/";
-let hub = "";
+let hub = "";//"ws://localhost:8088/";
 export let defaultRelays = defaultRelays1.map(relay => hub + relay );
 
 export let booktag="createbook";

@@ -39,6 +39,7 @@
 		"marked": "^15.0.7",
 		"nostr-tools": "^2.11.0",
 		"simplemde": "^1.11.2",
+		"ws":"",
 		"xmldom": "^0.6.0"
 	}
 }
