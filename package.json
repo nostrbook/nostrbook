@@ -28,7 +28,7 @@
 		"vite-plugin-static-copy": "^2.3.0"
 	},
 	"dependencies": {
-		"@nostr-dev-kit/ndk": "^2.12.2",
+		"@nostr-dev-kit/ndk": "^2.14.18",
 		"@sveltejs/adapter-node": "^5.2.12",
 		"@tailwindcss/postcss": "^4.0.14",
 		"@tailwindcss/vite": "^4.0.14",
@@ -39,7 +39,7 @@
 		"marked": "^15.0.7",
 		"nostr-tools": "^2.11.0",
 		"simplemde": "^1.11.2",
-		"ws":"",
+		"ws": "^8.18.2",
 		"xmldom": "^0.6.0"
 	}
 }

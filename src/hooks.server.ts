@@ -14,6 +14,10 @@ let cachedBlogs: any[] = [];
 function initializeDatas() {
     return new Promise<void>((resolve) => {
         booklist(defaultRelays, (e) => {
+                const foundTag = e.tags.find((tag) => tag[0] === "e");
+                if (foundTag) {
+                    e.id = foundTag[1];
+                }
                 cachedBooks.push({
                     id: e.id,
                     content: JSON.parse(e.content),
